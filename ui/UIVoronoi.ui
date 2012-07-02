@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>UIVoronoi</class>
+  <widget class="QDialog" name="UIVoronoi">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>537</width>
+        <height>279</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Voronoi</string>
+    </property>
+    <layout class="QGridLayout">
+      <item row="0" column="0">
+        <layout class="QGridLayout">
+          <item row="1" column="0">
+            <layout class="QGridLayout">
+              <item row="0" column="0">
+                <widget class="QPushButton" name="helpPushButton">
+                  <property name="text">
+                    <string>Help</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="2">
+                <widget class="QPushButton" name="okPushButton">
+                  <property name="text">
+                    <string>Ok</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="1">
+                <spacer name="spacer1">
+                  <property name="sizeHint">
+                    <size>
+                      <width>80</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="0" column="3">
+                <widget class="QPushButton" name="cancelPushButton">
+                  <property name="text">
+                    <string>Cancel</string>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+          <item row="0" column="0">
+            <widget class="QTabWidget" name="voronoiTabWidget">
+              <widget class="QWidget" name="inputPage">
+                <attribute name="title">
+                  <string>Input Data</string>
+                </attribute>
+                <layout class="QGridLayout">
+                  <item row="0" column="0">
+                    <layout class="QGridLayout">
+                      <item row="0" column="0">
+                        <layout class="QGridLayout">
+                          <item row="1" column="0">
+                            <widget class="Q3ButtonGroup" name="layerNameButtonGroup">
+                              <property name="title">
+                                <string>Choose a name to result Layer</string>
+                              </property>
+                              <layout class="QGridLayout">
+                                <item row="0" column="0">
+                                  <widget class="QLineEdit" name="layerNameLineEdit"/>
+                                </item>
+                              </layout>
+                            </widget>
+                          </item>
+                          <item row="0" column="0">
+                            <widget class="Q3GroupBox" name="themeGroupBox">
+                              <property name="title">
+                                <string>Select a Theme</string>
+                              </property>
+                              <layout class="QGridLayout">
+                                <item row="0" column="0">
+                                  <widget class="QComboBox" name="themeComboBox"/>
+                                </item>
+                              </layout>
+                            </widget>
+                          </item>
+                        </layout>
+                      </item>
+                      <item row="1" column="0">
+                        <spacer name="spacer3">
+                          <property name="sizeHint">
+                            <size>
+                              <width>20</width>
+                              <height>41</height>
+                            </size>
+                          </property>
+                          <property name="sizeType">
+                            <enum>QSizePolicy::Expanding</enum>
+                          </property>
+                          <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                          </property>
+                        </spacer>
+                      </item>
+                    </layout>
+                  </item>
+                </layout>
+              </widget>
+              <widget class="QWidget" name="optionsPage">
+                <attribute name="title">
+                  <string>Options</string>
+                </attribute>
+                <layout class="QGridLayout">
+                  <item row="0" column="0">
+                    <widget class="Q3ButtonGroup" name="optionsButtonGroup">
+                      <property name="title">
+                        <string>Result</string>
+                      </property>
+                      <layout class="QGridLayout">
+                        <item row="0" column="0">
+                          <layout class="QGridLayout">
+                            <item row="1" column="0">
+                              <widget class="Q3ButtonGroup" name="boxButtonGroup">
+                                <property name="title">
+                                  <string>Use the box of this Layer to delimit the diagram</string>
+                                </property>
+                                <layout class="QGridLayout">
+                                  <item row="0" column="0">
+                                    <widget class="QComboBox" name="boxComboBox"/>
+                                  </item>
+                                </layout>
+                              </widget>
+                            </item>
+                            <item row="0" column="0">
+                              <layout class="QGridLayout">
+                                <item row="1" column="0">
+                                  <widget class="Q3ButtonGroup" name="layerLinesButtonGroup">
+                                    <property name="enabled">
+                                      <bool>false</bool>
+                                    </property>
+                                    <property name="title">
+                                      <string>Choose a name to Layer of Lines</string>
+                                    </property>
+                                    <layout class="QGridLayout">
+                                      <item row="0" column="0">
+                                        <widget class="QLineEdit" name="layerLinesLineEdit"/>
+                                      </item>
+                                    </layout>
+                                  </widget>
+                                </item>
+                                <item row="0" column="0">
+                                  <layout class="QGridLayout">
+                                    <item row="0" column="0">
+                                      <widget class="QCheckBox" name="generateLinesCheckBox">
+                                        <property name="text">
+                                          <string>Generate also the Layer of Lines</string>
+                                        </property>
+                                        <property name="checked">
+                                          <bool>false</bool>
+                                        </property>
+                                      </widget>
+                                    </item>
+                                    <item row="0" column="1">
+                                      <spacer name="spacer2">
+                                        <property name="sizeHint">
+                                          <size>
+                                            <width>161</width>
+                                            <height>20</height>
+                                          </size>
+                                        </property>
+                                        <property name="sizeType">
+                                          <enum>QSizePolicy::Expanding</enum>
+                                        </property>
+                                        <property name="orientation">
+                                          <enum>Qt::Horizontal</enum>
+                                        </property>
+                                      </spacer>
+                                    </item>
+                                  </layout>
+                                </item>
+                              </layout>
+                            </item>
+                          </layout>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                </layout>
+              </widget>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>voronoiTabWidget</tabstop>
+    <tabstop>themeComboBox</tabstop>
+    <tabstop>layerNameLineEdit</tabstop>
+    <tabstop>okPushButton</tabstop>
+    <tabstop>cancelPushButton</tabstop>
+    <tabstop>helpPushButton</tabstop>
+    <tabstop>boxComboBox</tabstop>
+    <tabstop>layerLinesLineEdit</tabstop>
+    <tabstop>generateLinesCheckBox</tabstop>
+  </tabstops>
+  <connections>
+    <connection>
+      <sender>okPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>UIVoronoi</receiver>
+      <slot>okPushButton_clicked()</slot>
+    </connection>
+    <connection>
+      <sender>cancelPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>UIVoronoi</receiver>
+      <slot>close()</slot>
+    </connection>
+    <connection>
+      <sender>generateLinesCheckBox</sender>
+      <signal>clicked()</signal>
+      <receiver>UIVoronoi</receiver>
+      <slot>generateLinesCheckBox_clicked()</slot>
+    </connection>
+    <connection>
+      <sender>themeComboBox</sender>
+      <signal>activated(QString)</signal>
+      <receiver>UIVoronoi</receiver>
+      <slot>themeComboBox_activated(QString)</slot>
+    </connection>
+    <connection>
+      <sender>helpPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>UIVoronoi</receiver>
+      <slot>helpPushButton_clicked()</slot>
+    </connection>
+  </connections>
+</ui>

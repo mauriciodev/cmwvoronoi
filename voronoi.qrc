@@ -1,0 +1,6 @@
+<RCC>
+  <qresource>
+    <file>images/delaunay.png</file>
+	<file>images/voronoi.png</file>
+  </qresource>
+</RCC>

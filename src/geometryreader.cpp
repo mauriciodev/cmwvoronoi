@@ -1,0 +1,449 @@
+#include "geometryreader.h"
+
+GeometryReader::GeometryReader()
+{
+    OGRRegisterAll();
+}
+
+void GeometryReader::getTestPoints(siteVector &v, weightVector &w) {
+    v.push_back(Point_2(1,1));
+    v.push_back(Point_2(10,0));
+    v.push_back(Point_2(5,5));
+    w.push_back(5);
+    w.push_back(10);
+    w.push_back(5);
+}
+
+void GeometryReader::getRandomPoints(int nPoints, siteVector &v, weightVector &w) {
+    CGAL::Random generatorOfgenerator;
+    int random_seed = generatorOfgenerator.get_int(0, 123456);
+    std::cout << "random_seed = " << random_seed << std::endl;
+    CGAL::Random theRandom(random_seed);
+    double random_max = 0;
+    double random_min = -45;
+    double x1, y1,w1;
+
+    for (int i = 0; i < 10; i++) {
+        x1 = theRandom.get_double(random_min,random_max);
+        y1 = theRandom.get_double(random_min,random_max);
+        w1 = theRandom.get_double(10,100);
+        std::cout << x1 << " " << y1 <<" "<<  w1<< std::endl;
+        Point_2 s(x1,y1);
+        //s.weight=w1;
+        w.push_back(w1);
+        v.push_back(s);
+    }
+}
+
+bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightField, siteVector &sites, weightVector & w, int sizeLimit) {
+    OGRDataSource       *poDS;
+    poDS = OGRSFDriverRegistrar::Open( filename.c_str(), FALSE );
+    if( poDS == NULL ) return false;
+    OGRLayer  *poLayer= poDS->GetLayer(0);
+    if( poLayer == NULL ) return false;
+    OGRFeature *poFeature;
+
+    OGRFeatureDefn *fields=poLayer->GetLayerDefn();
+    int iField=fields->GetFieldIndex(weightField.c_str());
+    OGRGeometry *poGeometry;
+    poLayer->ResetReading();
+    int i=0;
+    while( ( (poFeature = poLayer->GetNextFeature()) != NULL ) && ((sizeLimit==0) || (i<sizeLimit))) {
+        i++;
+        w.push_back(poFeature->GetFieldAsDouble(iField)) ;
+        poGeometry = poFeature->GetGeometryRef();
+        if( poGeometry != NULL && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint )  {
+           OGRPoint *poPoint = (OGRPoint *) poGeometry;
+           sites.push_back(Point_2(poPoint->getX(),poPoint->getY()));
+        } else  {
+           printf( "no point geometry\n" );
+        }
+    }
+
+    return true;
+}
+
+bool GeometryReader::exportArrangementToGDAL(Arr &arr, std::string filename) {
+    const char *pszDriverName = "ESRI Shapefile";
+    OGRSFDriver *poDriver;
+    poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(pszDriverName );
+    if( poDriver == NULL )    {
+        printf( "%s driver not available.\n", pszDriverName );
+        return 1;
+    }
+    char** options=NULL;
+    options=CSLAddNameValue(options,"OVERWRITE","YES");
+
+    OGRDataSource *poDS;
+    poDS = poDriver->CreateDataSource( filename.c_str(), options );
+    if( poDS == NULL )    {
+        printf( "Creation of output file failed.\n" );
+        return  1 ;
+    }
+    OGRLayer *poLayer;
+    if (poDS->GetLayerByName(filename.c_str())) {
+        poDS->DeleteLayer(0);
+    }
+    poLayer = poDS->CreateLayer( filename.c_str(), NULL, wkbLineString, NULL );
+
+    if( poLayer == NULL ) {
+        printf( "Layer creation failed.\n" );
+        return 1;
+    }
+    OGRFeature *poFeature;
+
+    Arr::Edge_const_iterator eit;
+    //Arr::Halfedge_handle eit;
+    std::cout << arr.number_of_edges() << " edges:" << std::endl;
+
+    for (eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
+        poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
+        vector<double>x,y;
+        arcAsLinestring(eit->curve(),x,y);
+
+
+        OGRLineString line;
+        for(uint i=0; i<x.size();i++) {
+            if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) {
+                line.addPoint(x[i],y[i]);
+            }
+        }
+        if (x.size()>0) {
+            poFeature->SetGeometry( &line );
+            if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
+                printf( "Failed to create feature in shapefile.\n" );
+                exit( 1 );
+            }
+        }
+        OGRFeature::DestroyFeature( poFeature );
+
+    }
+    OGRDataSource::DestroyDataSource( poDS );
+    return 0;
+}
+
+bool GeometryReader::arcAsLinestring(Arr::X_monotone_curve_2 curve, vector<double> &outX, vector<double> &outY, double tol) {
+    /*FIXME number of vertexes*/
+    if (curve.is_circular()) {
+    //if (false){
+
+        double r=CGAL::sqrt(CGAL::to_double(curve.supporting_circle().squared_radius()));
+        double cx=CGAL::to_double(curve.supporting_circle().center().x());
+        double cy=CGAL::to_double(curve.supporting_circle().center().y());
+        double steps=10;
+        Point_2 center=Point_2(cx,cy);
+        double angle;
+        Point_2 p1=Point_2(CGAL::to_double(curve.source().x()),CGAL::to_double(curve.source().y()));
+        Point_2 p2=Point_2(CGAL::to_double(curve.target().x()),CGAL::to_double(curve.target().y()));
+        double ang0=measureAngle(Point_2(cx+1,cy),center,p1);
+        if (curve.orientation()==CGAL::CLOCKWISE) {
+            Point_2 pAux=p2;
+            p2=p1;
+            p1=pAux;
+        }
+
+        angle=measureAngle(p1,center,p2);
+        if (curve.orientation()==CGAL::CLOCKWISE) angle*=-1.;
+
+
+
+        double angStep,xi=0,yi=0;
+        for (int i=0; i<steps+1; i++) {
+            angStep=ang0+angle/(steps)*i;
+            xi=cx+r*cos(angStep);
+            yi=cy+r*sin(angStep);
+            outX.push_back(xi);
+            outY.push_back(yi);
+        }
+    } else {
+        outX.push_back(CGAL::to_double(curve.source().x()));
+        outY.push_back(CGAL::to_double(curve.source().y()));
+        outX.push_back(CGAL::to_double(curve.target().x()));
+        outY.push_back(CGAL::to_double(curve.target().y()));
+    }
+    return true;
+
+}
+
+double GeometryReader::measureAngle(Point_2 p1, Point_2 p0, Point_2 p2) {
+
+        double x1=CGAL::to_double(p1.x());
+        double x2=CGAL::to_double(p2.x());
+        double y1=CGAL::to_double(p1.y());
+        double y2=CGAL::to_double(p2.y());
+        double cx=CGAL::to_double(p0.x());
+        double cy=CGAL::to_double(p0.y());
+        Vector_2 u1(x1-cx,y1-cy),u2(x2-cx,y2-cy);
+
+        double scalar=CGAL::to_double(u1*u2);
+        double norm1=sqrt(CGAL::to_double(u1*u1));
+        double norm2=sqrt(CGAL::to_double(u2*u2));
+        double cosTheta=scalar/norm1/norm2;
+        double cross=CGAL::to_double(u1.x()*u2.y()-u1.y()*u2.x());
+        double sinTheta=cross/norm1/norm2;
+        double angle;
+        if (cosTheta< -1.) {
+            angle=M_PI;
+        } else if (cosTheta>1. ) {
+            angle=0;
+        } else {
+            angle=acos(cosTheta);
+            if (sinTheta<0) {
+                angle=2*M_PI-angle;
+            }
+        }
+        return angle;
+}
+
+bool GeometryReader::exportPointsToGDAL(vector<Point_2> &pointList,std::string filename) {
+    const char *pszDriverName = "ESRI Shapefile";
+    OGRSFDriver *poDriver;
+    poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(pszDriverName );
+    if( poDriver == NULL )    {
+        printf( "%s driver not available.\n", pszDriverName );
+        return 1;
+    }
+    char** options=NULL;
+    options=CSLAddNameValue(options,"OVERWRITE","YES");
+
+    OGRDataSource *poDS;
+    poDS = poDriver->CreateDataSource( filename.c_str(), options );
+    if( poDS == NULL )    {
+        printf( "Creation of output file failed.\n" );
+        return  1 ;
+    }
+    OGRLayer *poLayer;
+    if (poDS->GetLayerByName(filename.c_str())) {
+        poDS->DeleteLayer(0);
+    }
+    poLayer = poDS->CreateLayer( filename.c_str(), NULL, wkbPoint, NULL );
+
+    if( poLayer == NULL ) {
+        printf( "Layer creation failed.\n" );
+        return 1;
+    }
+    OGRFeature *poFeature;
+
+        //Arr::Halfedge_handle eit;
+
+    vector<Point_2>::iterator pIt;
+    for (pIt=pointList.begin(); pIt!=pointList.end(); ++pIt) {
+        poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
+
+        OGRPoint p;
+        p.setX(CGAL::to_double(pIt->x()));
+        p.setY(CGAL::to_double(pIt->y()));
+
+        poFeature->SetGeometry( &p );
+        if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
+            printf( "Failed to create feature in shapefile.\n" );
+            exit( 1 );
+        }
+
+        OGRFeature::DestroyFeature( poFeature );
+
+    }
+    OGRDataSource::DestroyDataSource( poDS );
+    return 0;
+}
+
+bool GeometryReader::exportArrangementFacesToGDAL(Arr &arr, std::string filename,Bbox_2 extent) {
+    //FIXME handle holes
+    const char *pszDriverName = "ESRI Shapefile";
+    OGRSFDriver *poDriver;
+    poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(pszDriverName );
+    if( poDriver == NULL )    {
+        printf( "%s driver not available.\n", pszDriverName );
+        return 1;
+    }
+    char** options=NULL;
+    options=CSLAddNameValue(options,"OVERWRITE","YES");
+
+    OGRDataSource *poDS;
+    poDS = poDriver->CreateDataSource( filename.c_str(), options );
+    if( poDS == NULL )    {
+        printf( "Creation of output file failed.\n" );
+        return  1 ;
+    }
+    OGRLayer *poLayer;
+    if (poDS->GetLayerByName(filename.c_str())) {
+        poDS->DeleteLayer(0);
+    }
+    poLayer = poDS->CreateLayer( filename.c_str(), NULL, wkbPolygon, NULL );
+
+    if( poLayer == NULL ) {
+        printf( "Layer creation failed.\n" );
+        return 1;
+    }
+    OGRFeature *poFeature;
+
+    Arr::Face_const_handle fit;
+    std::cout << arr.number_of_faces() << " faces:" << std::endl;
+    for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
+        poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
+        Arr::Edge_const_iterator eit;
+        OGRPolygon pol;
+        OGRLinearRing ring;
+
+        if (fit->is_unbounded()) {
+            //use the bounding box
+            double xmin=extent.xmin();
+            double ymin=extent.ymin();
+            double xmax=extent.xmax();
+            double ymax=extent.ymax();
+            ring.addPoint(xmin,ymin);
+            ring.addPoint(xmin,ymax);
+            ring.addPoint(xmax,ymax);
+            ring.addPoint(xmax,ymin);
+            std::cout << "Unbounded face. " << std::endl;
+        } else {
+            Arr::Ccb_halfedge_const_circulator curr = fit->outer_ccb();
+            do  {
+
+                //curr->curve();
+                vector<double>x,y;
+                arcAsLinestring(curr->curve(),x,y);
+                double xi,yi;
+                for(uint i=0; i<x.size();i++) {
+                    if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                        Point_2 contrained=constrainInside(Point_2(x[i],y[i]), extent);
+                        xi=CGAL::to_double(contrained.x());
+                        yi=CGAL::to_double(contrained.y());
+                        ring.addPoint(xi,yi);
+                        //if (isInside(Point_2(x[i],y[i]),extent)) {
+
+                        //}
+                    }
+                }
+
+
+            } while (++curr != fit->outer_ccb());
+        }
+        pol.addRing(&ring);
+        /*for (eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
+
+            vector<double>x,y;
+            arcAsLinestring(eit,x,y);
+
+
+            OGRLineString line;
+            for(uint i=0; i<x.size();i++) {
+                if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) {
+                    line.addPoint(x[i],y[i]);
+                }
+            }*/
+        //if (pol.>0) {
+            poFeature->SetGeometry( &pol );
+            if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
+                printf( "Failed to create feature in shapefile.\n" );
+                exit( 1 );
+            }
+        //}
+
+        OGRFeature::DestroyFeature( poFeature );
+
+    }
+    OGRDataSource::DestroyDataSource( poDS );
+    CPLFree(options);
+    return 0;
+}
+
+bool GeometryReader::isInside(Point_2 p, Bbox_2 box) {
+    double px,py;
+    px=CGAL::to_double(p.x());
+    py=CGAL::to_double(p.y());
+    return ((px>box.xmin()) && (px<box.xmax()) && (py>box.ymin()) && (py<box.ymax()));
+}
+
+Point_2 GeometryReader::constrainInside(Point_2 p, Bbox_2 box) {
+    double px,py;
+    px=CGAL::to_double(p.x());
+    py=CGAL::to_double(p.y());
+    if (px<box.xmin()) px=box.xmin();
+    if (px>box.xmax()) px=box.xmax();
+    if (py<box.ymin()) py=box.ymin();
+    if (py>box.ymax()) py=box.ymax();
+    return Point_2(px,py);
+}
+
+bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string filename) {
+    //FIXME handle holes
+    const char *pszDriverName = "ESRI Shapefile";
+    OGRSFDriver *poDriver;
+    poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(pszDriverName );
+    if( poDriver == NULL )    {
+        printf( "%s driver not available.\n", pszDriverName );
+        return 1;
+    }
+    char** options=NULL;
+    options=CSLAddNameValue(options,"OVERWRITE","YES");
+
+    OGRDataSource *poDS;
+    poDS = poDriver->CreateDataSource( filename.c_str(), options );
+    if( poDS == NULL )    {
+        printf( "Creation of output file failed.\n" );
+        return  1 ;
+    }
+    OGRLayer *poLayer;
+    if (poDS->GetLayerByName(filename.c_str())) {
+        poDS->DeleteLayer(0);
+    }
+    poLayer = poDS->CreateLayer( filename.c_str(), NULL, wkbPolygon, NULL );
+
+    if( poLayer == NULL ) {
+        printf( "Layer creation failed.\n" );
+        return 1;
+    }
+    OGRFeature *poFeature;
+
+
+    std::cout << diagram.size() << " areas created." << std::endl;
+    for (mwv::MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
+        poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
+        OGRPolygon pol;
+        std::list<mwv::Polygon_with_holes_2> res;
+        std::list<mwv::Polygon_with_holes_2>::const_iterator it;
+        cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
+
+        polIt->polygons_with_holes (std::back_inserter (res));
+
+        for (it=res.begin();it!=res.end();++it) {
+            OGRLinearRing ring;
+            mwv::Polygon_2::Curve_const_iterator cIt;
+            //cout << "Curves: "<<it->outer_boundary().number << endl;
+            for(cIt=it->outer_boundary().curves_begin(); cIt!=it->outer_boundary().curves_end();++cIt) {
+
+                vector<double>x,y;
+                arcAsLinestring(*cIt,x,y);
+
+                for(uint i=0; i<x.size()-1;i++) {
+                    if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                        ring.addPoint(x[i],y[i]);
+                    }
+                }
+
+
+            }
+            OGRPoint p0;
+            ring.getPoint(0,&p0);
+            ring.addPoint(&p0);
+            pol.addRing(&ring); //if (ring.IsValid())
+            cout<<ring.getNumPoints()<<endl;
+        }
+
+
+        if (pol.getBoundary()->IsValid()) {
+            poFeature->SetGeometry( &pol );
+            if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
+                printf( "Failed to create feature in shapefile.\n" );
+                exit( 1 );
+            }
+        }
+
+        OGRFeature::DestroyFeature( poFeature );
+
+    }
+    OGRDataSource::DestroyDataSource( poDS );
+    CPLFree(options);
+    return 0;
+}

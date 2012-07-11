@@ -31,6 +31,12 @@ void VoronoiDiagramPlugin::init()
 			showVoronoiWinAction_->setText(tr("Voronoi"));
 			showVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/voronoi.png")));
 
+            // Voronoi Ponderado Multiplicativamente 
+			showMWVoronoiWinAction_ = new QAction(0);
+			showMWVoronoiWinAction_->setMenuText(tr("Voronoi Ponderado Multiplicativamente"));
+			showMWVoronoiWinAction_->setText(tr("Voronoi Ponderado Multiplicativamente"));
+			showMWVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/mwvoronoi.png")));
+
 			// Delaunay
 			showDelaunayWinAction_ = new QAction(0);
 			showDelaunayWinAction_->setMenuText(tr("Delaunay"));
@@ -45,10 +51,12 @@ void VoronoiDiagramPlugin::init()
 			if(mnu != 0)
 			{
 				mnu->addAction(showVoronoiWinAction_);
+				mnu->addAction(showMWVoronoiWinAction_);
 				mnu->addAction(showDelaunayWinAction_);
 			}
 
 			connect(showVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showVoronoiWindow()));
+			connect(showMWVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showMWVoronoiWindow()));
 			connect(showDelaunayWinAction_, SIGNAL(activated()), this, SLOT(showDelaunayWindow()));
 		}
 	}
@@ -57,7 +65,9 @@ void VoronoiDiagramPlugin::init()
 		QMessageBox::critical(tview, tr("TerraView plug-in error"), tr("Can't create plug-in menu."));
 		delete showVoronoiWinAction_;
 		showVoronoiWinAction_ = 0;
-		delete showDelaunayWinAction_;
+        delete showMWVoronoiWinAction_;
+		showMWVoronoiWinAction_ = 0;
+        delete showDelaunayWinAction_;
 		showDelaunayWinAction_ = 0;
 	}
 }
@@ -65,7 +75,8 @@ void VoronoiDiagramPlugin::init()
 void VoronoiDiagramPlugin::end()
 {
 	delete showVoronoiWinAction_;
-	delete showDelaunayWinAction_;
+    delete showMWVoronoiWinAction_;
+    delete showDelaunayWinAction_;
 }
 
 void VoronoiDiagramPlugin::showVoronoiWindow()
@@ -74,8 +85,14 @@ void VoronoiDiagramPlugin::showVoronoiWindow()
 	win.showWindow();
 }
 
+void VoronoiDiagramPlugin::showMWVoronoiWindow()
+{
+	VoronoiWindow win(params_,MWVoronoi);
+	win.showWindow();
+}
+
 void VoronoiDiagramPlugin::showDelaunayWindow()
 {
-	VoronoiWindow win(params_, true);
+	VoronoiWindow win(params_,Delaunay);
 	win.showWindow();
 }

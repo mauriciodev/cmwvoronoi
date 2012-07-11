@@ -32,11 +32,13 @@ protected slots:
 
 	void showVoronoiWindow();
     void showDelaunayWindow();
+    void showMWVoronoiWindow();
 
 protected:
 
 	QAction* showVoronoiWinAction_;
     QAction* showDelaunayWinAction_;
+    QAction* showMWVoronoiWinAction_;
 };
 
 #endif //__VORONOIDIAGRAM_PLUGIN_H_

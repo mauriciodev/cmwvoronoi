@@ -1,3 +1,4 @@
+#pragma optimize("g", off)
 // Voronoi
 #include "VoronoiWindow.h"
 #include "VoronoiDiagramGenerator.h"
@@ -9,6 +10,9 @@
 #include <TeDatabase.h>
 #include <TeVectorRemap.h>
 #include <TeWaitCursor.h>
+#include <TeQuerier.h>
+#include <TeQuerierParams.h>
+#include <TeGeoProcessingFunctions.h>
 
 // Qt
 #include <qbuttongroup.h>
@@ -37,18 +41,91 @@ struct XYOrderFunctor
     }
 };
 
-VoronoiWindow::VoronoiWindow(PluginParameters* pp, const bool& delaunay) : 
+bool VoronoiWindow::MWDiagramAsTePolygonSet(mwv::MWVDiagram &diagram, TePolygonSet &ps) {
+    mwv::MWVDiagram::iterator dIt;
+    int polId=0;
+    for (mwv::MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
+        std::list<mwv::Polygon_with_holes_2> res;
+        std::list<mwv::Polygon_with_holes_2>::const_iterator it;
+        cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
+        polIt->polygons_with_holes (std::back_inserter (res));
+
+        for (it=res.begin();it!=res.end();++it) {
+            TePolygon pol;
+            TeLinearRing ring;
+            mwv::Polygon_2::Curve_const_iterator cIt;
+            //cout << "Curves: "<<it->outer_boundary().number << endl;
+            GeometryReader geomAux;
+            //reading outer boundary
+            for(cIt=it->outer_boundary().curves_begin(); cIt!=it->outer_boundary().curves_end();++cIt) {
+
+                vector<double>x,y;
+
+                geomAux.arcAsLinestring(*cIt,x,y);
+                for(uint i=0; i<x.size()-1;i++) {
+                    if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                        ring.add(TeCoord2D(x[i],y[i]));
+                    }
+                }
+            }
+            ring.add(*(ring.begin()));
+            pol.add(ring); //if (ring.IsValid())
+            cout<<ring.size()<<endl;
+
+            //reading holes
+            typename mwv::Polygon_with_holes_2::Hole_const_iterator hit;
+            std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
+            for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
+                TeLinearRing innerRing;
+                for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
+                    vector<double>x,y;
+
+                    geomAux.arcAsLinestring(*cIt,x,y);
+                    for(uint i=0; i<x.size()-1;i++) {
+                        if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                            innerRing.add(TeCoord2D(x[i],y[i]));
+                        }
+                    }
+                }
+                if (it->number_of_holes()>0) {
+
+                    innerRing.add(*(innerRing.begin()));
+                    pol.add(innerRing);
+                }
+            }
+            //ring.getPoint(0,&p0);
+
+            string objectId;
+            stringstream ss;
+            ss<<polId;
+            pol.geomId(polId);
+            pol.objectId(ss.str());
+            ps.add(pol);
+        }
+        polId++;
+
+    }
+}
+
+VoronoiWindow::VoronoiWindow(PluginParameters* pp, const enumDiagramType diagramType) : 
 UIVoronoi((QWidget*)pp->qtmain_widget_ptr_),
-plugin_params_(pp),
-delaunay_(delaunay)
+plugin_params_(pp)
 {
+	/*! Selects what aditional parameters each diagram needs.*/
 	ui = (new Ui::UIVoronoi);
 	ui->setupUi(this);
 
-    if(delaunay_ == false)
-        return;
-    setCaption("Delaunay");
-    ui->boxButtonGroup->hide();
+    ui->weightGroupBox->hide();
+    this->diagramType=diagramType;
+
+   if(diagramType==Delaunay) {
+        setCaption("Delaunay");
+		ui->boxButtonGroup->hide();
+    }
+    if(diagramType==MWVoronoi) {
+        setCaption("Multiplicatively Weighted Voronoi");
+        ui->weightGroupBox->show();
+    }
 }
 
 VoronoiWindow::~VoronoiWindow()
@@ -67,6 +144,16 @@ void VoronoiWindow::themeComboBox_activated(const QString& themeName)
     // Updates the combo box with delimiters...
     TeLayer* layer = theme->layer();
     ui->boxComboBox->setCurrentText(layer->name().c_str());
+
+	// Lists attributes on the weightComboBox
+    ui->weightComboBox->clear();
+    //if (text=="") text=themeComboBox->currentText().latin1();
+    TeTable *attrTable = &layer->attrTables()[0];
+    TeAttributeList * attrList=&attrTable->attributeList();
+    for (std::vector<TeAttribute>::iterator i=attrList->begin(); i!=attrList->end();++i) {
+        cout<<i->rep_.name_<<endl;
+        ui->weightComboBox->insertItem(i->rep_.name_.c_str());
+    }
 }
 
 void VoronoiWindow::helpPushButton_clicked()
@@ -136,16 +223,16 @@ void VoronoiWindow::okPushButton_clicked()
     
     TePrecision::instance().setPrecision(TeGetPrecision(theme->layer()->projection()));
     
-    TeLayer* layerDelimiter = getLayer(ui->boxComboBox->currentText().latin1());
-    if(layerDelimiter == 0)
+    TeTheme *themeDelimiter = getTheme(ui->boxComboBox->currentText().latin1());
+    if(themeDelimiter == 0)
     {
         QMessageBox::critical(this, tr("Error"), tr("Error getting the delimiter Layer."));
 		return;
     }
 
     // Verifies is the box chosen is valid
-    TeBox b = layerDelimiter->box();
-    TeProjection* projFrom = layerDelimiter->projection();
+    TeBox b = themeDelimiter->layer()->box();
+    TeProjection* projFrom = themeDelimiter->layer()->projection();
     TeProjection* projTo = theme->layer()->projection();
     if(!((*projFrom) == (*projTo))) // need remap?
         b = TeRemapBox(b, projFrom, projTo);
@@ -158,11 +245,43 @@ void VoronoiWindow::okPushButton_clicked()
         ui->boxComboBox->setFocus();
         return;
     }
+    
+    //if a breakline layer was chosen, set the breakline flag to true
+    bool useBreakLines=false;
+    std::string breakLinesLayerName=ui->breakLinesComboBox->currentText().ascii();
+    TeLineSet breakLines;
+    if (breakLinesLayerName.compare("None") ) {
+        useBreakLines=true;
+        
+        getLayer(breakLinesLayerName)->getLines(breakLines);
+        //QMessageBox::information(this, tr("Information"), tr("Breaklines found"));
 
-	TePointSet ps;
-	theme->layer()->getPoints(ps);
+        QMessageBox::information(this, tr("Information"), ((Te2String(breakLines.size()))+" break lines found.").c_str());
+    } 
+    
+    
+    //preparing to read the layer
+    bool loadAllAttributes=false;
+    if (diagramType==MWVoronoi) loadAllAttributes = true;
+    bool loadGeometries = true;
+    TeQuerierParams querierParams(loadGeometries, loadAllAttributes);
+    querierParams.setParams(theme->layer());
+    TeQuerier  querier(querierParams);
+    querier.loadInstances();
+    //finding weight's attribute
+    TeAttributeList attrList = querier.getAttrList();
+    int weightAttrN=0;
+    if (diagramType==MWVoronoi) {
+        for (std::vector<TeAttribute>::iterator i=attrList.begin(); i!=attrList.end();++i) {
+            if (ui->weightComboBox->currentText().toStdString()==i->rep_.name_) {
+                break;
+            }
+            weightAttrN++;
+        }    
+    }
+    int n=querier.numElemInstances();
 
-    if(ps.empty())
+    if(n==0)
     {
         QMessageBox::critical(this, tr("Error"), tr("Error getting the points of input Theme."));
         return;
@@ -171,41 +290,87 @@ void VoronoiWindow::okPushButton_clicked()
     TeWaitCursor wait;
 
     // Converts x,y to a float array in order to pass to VoronoiDiagramGenerator class
-    float* x = new float[ps.size()];
-	float* y = new float[ps.size()];
-    sort(ps.begin(), ps.end(), XYOrderFunctor()); // need to compare equals points
-    x[0] = ps[0].location().x_;
-	y[0] = ps[0].location().y_;
-    int numPoints = 1;
-	for(unsigned int i = 1; i < ps.size(); ++i) // for each point
-	{
-        if(TeEquals(ps[i-1], ps[i])) // Do not consider equals
-            continue;
+    float* x = new float[n];
+	float* y = new float[n];
+    //pointers for weighted voronoi
+    float* w;
+    int numPoints;
+    w= new float[n];
+    numPoints = 0;
+    TeSTInstance sti;
+    string peso;
+    //TePoint pointBefore(0,0);
+    while(querier.fetchInstance(sti)) { // for each point
         // Stores on float array
-		x[numPoints] = ps[i].location().x_;
-		y[numPoints] = ps[i].location().y_;
-        numPoints++;
-	}
-
+        if(sti.hasPoints())
+            {
+                TePointSet pointSet;
+                //reading geometry
+                sti.getGeometry(pointSet);
+                x[numPoints] = pointSet[0].location().x();
+                y[numPoints] = pointSet[0].location().y();
+    
+                //reading weight
+                if (diagramType==MWVoronoi) {
+                    stringstream ss;
+                    sti.getPropertyValue(peso,weightAttrN);
+                    ss<<peso;
+                    ss>>w[numPoints];
+                }                    
+                numPoints++;
+            }
+        }
+    //sort the vertexes for delaunay and voronoi
+    if (diagramType!=MWVoronoi) {
+        TePointSet ps;
+        for (int i=0; i<numPoints;i++){
+            ps.add(TePoint(x[i],y[i]));
+        }
+        sort(ps.begin(), ps.end(), XYOrderFunctor()); // need to compare equals points
+        x[0] = ps[0].location().x_;
+        y[0] = ps[0].location().y_;
+        numPoints=1;
+        for(unsigned int i = 1; i < ps.size(); ++i) { // for each point
+            if(TeEquals(ps[i-1], ps[i])) // Do not consider equals
+                continue;
+            // Stores on float array
+    		x[numPoints] = ps[i].location().x_;
+    		y[numPoints] = ps[i].location().y_;
+            numPoints++;
+    	}
+    }
+    
+    
     // Generates the Voronoi Diagram
-	VoronoiDiagramGenerator vdg;
-    if(delaunay_)
-    {
-        vdg.setGenerateDelaunay(delaunay_);
-        vdg.setGenerateVoronoi(false);
-    }
-	vdg.generateVoronoi(x, y, numPoints, b.x1_, b.x2_, b.y1_, b.y2_, 0.0);
-	
-	delete [] x;
-	delete [] y;
-
-	TeLineSet ls;
+    TeLineSet ls;
 	float x1, y1, x2, y2;
-    vdg.resetVertexPairIterator();
-    vdg.resetDelaunayEdgesIterator();
-    if(delaunay_ == false)
+    VoronoiDiagramGenerator * vdg;
+    //mwVoronoiDiagramGenerator *mwvdg;
+    if(this->diagramType==Voronoi) {
+        vdg= new VoronoiDiagramGenerator();
+        vdg->generateVoronoi(x, y, numPoints, b.x1_, b.x2_, b.y1_, b.y2_, 0.0);
+        vdg->resetVertexPairIterator();
+        vdg->resetDelaunayEdgesIterator();
+        while(vdg->getNextVertexPair(x1, y1, x2, y2))
+        {
+            if(x1 == x2 && y1 == y2)
+                continue;
+
+	        TeLine2D l;
+	        l.add(TeCoord2D(x1, y1));
+	        l.add(TeCoord2D(x2, y2));
+	        ls.add(l);
+        }
+    }	
+    
+    if(this->diagramType==Delaunay)
     {
-        while(vdg.getNextVertexPair(x1, y1, x2, y2))
+        vdg= new VoronoiDiagramGenerator();
+        vdg->setGenerateDelaunay(true);
+        vdg->setGenerateVoronoi(false);
+        vdg->generateVoronoi(x, y, numPoints, b.x1_, b.x2_, b.y1_, b.y2_, 0.0);
+        //creates the output lineset
+        while(vdg->getNextDelaunay(x1, y1, x2, y2))
         {
             if(x1 == x2 && y1 == y2)
                 continue;
@@ -216,31 +381,58 @@ void VoronoiWindow::okPushButton_clicked()
 	        ls.add(l);
         }
     }
-    else
-    {
-        while(vdg.getNextDelaunay(x1, y1, x2, y2))
-        {
-            if(x1 == x2 && y1 == y2)
-                continue;
+    
+    
+    TePolygonSet diagram;
+    
+    if(this->diagramType==MWVoronoi) {
+        
+        siteVector pointSet;
+        weightVector weights;
 
-	        TeLine2D l;
-	        l.add(TeCoord2D(x1, y1));
-	        l.add(TeCoord2D(x2, y2));
-	        ls.add(l);
+        mwv DiagramGenerator;
+        mwv::MWVDiagram mwdiagram;
+        pointSet.resize(numPoints);
+        weights.resize(numPoints);
+        for (int i=0;i<numPoints;i++ ) {
+            pointSet[i]=Point_2(x[i],y[i]);
+            weights[i]=w[i];
+        }
+        DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), mwdiagram);
+        if (useBreakLines) {
+            //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_,breakLines );
+        } else {
+            
+            //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_);
+        }
+        
+        //mwvdg->writeCSV("/home/mauricio/Projetos/mwvd/saida_terraview.csv");
+        //diagram=*mwvdg->domList;
+        MWDiagramAsTePolygonSet(mwdiagram,diagram);
+        //FIXME still need to write the polygons!
+    }
+   
+    
+    
+    delete [] x;
+    delete [] y;
+    delete [] w;
+
+
+    if (diagramType!=MWVoronoi){
+        if(ls.empty())
+        {
+            QMessageBox::information(this, tr("Information"), tr("No line of Voronoi Diagram crosses the box chosen. Please, try another."));
+            ui->voronoiTabWidget->setCurrentPage(1);
+            ui->boxComboBox->setFocus();
+            wait.resetWaitCursor();
+            return;
         }
     }
 
-    if(ls.empty())
-    {
-        QMessageBox::information(this, tr("Information"), tr("No line of Voronoi Diagram crosses the box chosen. Please, try another."));
-        ui->voronoiTabWidget->setCurrentPage(1);
-        ui->boxComboBox->setFocus();
-        wait.resetWaitCursor();
-        return;
-    }
 
     // Adding the lines of box in order to cut the diagram
-    if(delaunay_ == false)
+    if (this->diagramType==Voronoi)
     {
         TePolygon pbox = TeMakePolygon(ls.box());
         TeLinearRing& ring = pbox[0];
@@ -252,32 +444,44 @@ void VoronoiWindow::okPushButton_clicked()
             ls.add(line);
         }
     }
-
+    
     TeLineSet fixedLines;
-    TeBreakLines(ls, fixedLines); 
-
-    if(ui->generateLinesCheckBox->isChecked())
-		createLayer(layerLinesName, db, theme->layer()->projection(), fixedLines);
-
-    // Adds identifiers to polygonizer control...
-    for(unsigned int i = 0; i < fixedLines.size(); ++i)
-    {
-        std::string sid = Te2String(i);	
-	    fixedLines[i].objectId(sid);
+    
+    if (diagramType!=MWVoronoi){
+        TeBreakLines(ls, fixedLines); 
+    
+        if(ui->generateLinesCheckBox->isChecked())
+            createLayer(ui->layerLinesLineEdit->text().latin1(), db, theme->layer()->projection(), fixedLines);
+    
+        // Adds identifiers to polygonizer control...
+        for(unsigned int i = 0; i < fixedLines.size(); ++i)
+        {
+            std::string sid = Te2String(i);	
+    	    fixedLines[i].objectId(sid);
+        }
+    
+        // Gets Polygons!
+        
+        Polygonizer(fixedLines, diagram);
     }
 
-    // Gets Polygons!
-    TePolygonSet diagram;
-    Polygonizer(fixedLines, diagram);
-    if(!createLayer(layerName, db, theme->layer()->projection(), diagram))
+    TeLayer * diagramLayer=createLayer(ui->layerNameLineEdit->text().latin1(), db, theme->layer()->projection(), diagram);
+    //if (diagramType==MWVoronoi) delete mwvdg;
+    
+    if(!diagramLayer)
     {
         wait.resetWaitCursor();
         return;
     }
 
+    //if the layers are not equal, I should to clip the diagram
+    if (theme->name()!=themeDelimiter->name()) {
+        clipLayer(diagramLayer,themeDelimiter,db);
+    } 
+
     wait.resetWaitCursor();
 
-    if(delaunay_ == false)
+    if(this->diagramType!=Delaunay)
 	    QMessageBox::information(this, tr("Information"), tr("The Voronoi Diagram was generated successfully!"));
     else
         QMessageBox::information(this, tr("Information"), tr("The Delaunay Diagram was generated successfully!"));
@@ -318,7 +522,9 @@ void VoronoiWindow::showWindow()
         QMessageBox::information(this, tr("Information"), tr("No Theme with point representation found."));
 		return;
     }
+    
 
+    //Extent layer
     TeLayerMap& layerMap = plugin_params_->getCurrentDatabasePtr()->layerMap();
 	TeLayerMap::iterator layerIt;
 	for(layerIt = layerMap.begin(); layerIt != layerMap.end(); ++layerIt)
@@ -326,6 +532,16 @@ void VoronoiWindow::showWindow()
     
     ui->boxComboBox->setCurrentText(delimiter.c_str());
 
+    //break lines layer
+    ui->breakLinesComboBox->clear();
+    ui->breakLinesComboBox->insertItem("None");
+    for(layerIt = layerMap.begin(); layerIt != layerMap.end(); ++layerIt)
+        if (layerIt->second->geomRep() & TeLINES ) 
+            ui->breakLinesComboBox->insertItem(QString(layerIt->second->name().c_str()));
+
+    //filling the attributes box.
+
+    this->themeComboBox_activated(ui->themeComboBox->currentText());
 	exec();
 }
 
@@ -345,6 +561,13 @@ TeLayer* VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeP
 	if(!layer->createSfsTable(attTable, rep))
 	{
 		QMessageBox::critical(this, tr("Error"), tr("Error creating the new layer table."));
+		db->deleteLayer(layer->id());
+        return 0;
+	}
+
+    if(!layer->addGeometry(rep))
+	{
+		QMessageBox::critical(this, tr("Error"), tr("Error adding geometric representation to new layer."));
 		db->deleteLayer(layer->id());
 		return 0;
 	}
@@ -384,7 +607,7 @@ bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProje
     return true;
 }
     
-bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps)
+TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps)
 {
 	TeLayer* layer = createLayer(name, db, proj, TePOLYGONS);
 	if(layer == 0)
@@ -392,6 +615,7 @@ bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProje
 
 	TeFeatureSet fs;
 	TeTable& attrTable = layer->attrTables()[0];
+    std::string lastSid=ps[0].objectId();
 	for(unsigned int i = 0; i < ps.size(); ++i)
 	{
 		std::string sid = Te2String(i);	
@@ -412,7 +636,7 @@ bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProje
 		return false;
 	}
     
-    return true;
+    return layer;
 }
 
 TeTheme* VoronoiWindow::getTheme(const std::string& name)
@@ -470,4 +694,59 @@ bool VoronoiWindow::isLayerNameValid(const std::string& name)
     }
 
     return true;
+}
+
+TeTheme * VoronoiWindow::createTheme(string layername, TeDatabase *db, TeView *view) {
+    TeLayer* layer = new TeLayer(layername,db);
+    TeTable attTable2;
+    layer->getAttrTablesByName(layername,attTable2);
+    TeTheme* theme = new TeTheme(layername, layer);
+    view->add(theme);
+    theme ->addThemeTable(attTable2);
+    theme->visibleRep(layer->geomRep());
+    if (!theme->save() || !theme->buildCollection())
+    {
+        cout << "Error trying to create the theme"
+               << db->errorMessage() << endl;
+        return NULL;
+    }
+    cout << "Theme created ..\n";
+    return theme;
+}
+
+bool VoronoiWindow::clipLayer(TeLayer *diagramLayer, TeTheme *themeDelimiter, TeDatabase *db) {
+    TeView* view = new TeView("Voronoi");
+    view->projection(diagramLayer->projection());
+    db->insertView(view);
+    TeTheme * diagramTheme=createTheme(diagramLayer->name(),db,view);
+
+    TeBox bInvalid;
+    TeLayer *clippedLayer=new TeLayer((diagramLayer->name()+"_clipped"), db, bInvalid, diagramLayer->projection());
+    bool result=TeGeoOpOverlayIntersection(clippedLayer,diagramTheme,themeDelimiter,TeAll,TeAll,true);
+    //delete clippedLayer;
+    db->deleteTheme(diagramTheme->id());
+    db->deleteView(view->id());
+    return result;
+}
+
+bool VoronoiWindow::copyAttributes(TeLayer *diagramLayer, TeTheme *pointsTheme, TeDatabase *db) {
+    TeView* view = new TeView("Voronoi");
+    view->projection(diagramLayer->projection());
+    db->insertView(view);
+    TeTheme * diagramTheme=createTheme(diagramLayer->name(),db,view);
+
+    //attribute mapper
+    TeGroupingAttr measuresColl;
+    //pointsTheme->loadThemeTables ();
+    TeAttrTableVector attrTables;
+    pointsTheme->getAttTables(attrTables);
+    TeAttributeList attrList= attrTables[0].attributeList ();
+    for (TeAttributeList::iterator i=attrList.begin(); i!=attrList.end();++i) {
+        measuresColl.push_back(make_pair<TeAttributeRep, TeStatisticType>(i->rep_, TeMODE));
+    }
+    bool result=TeGeoOpAssignByLocationCollect(diagramTheme,pointsTheme,diagramLayer->name(),measuresColl   ,TeINTERSECTS);
+
+    db->deleteTheme(diagramTheme->id());
+    db->deleteView(view->id());
+    return result;
 }

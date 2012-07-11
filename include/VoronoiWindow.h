@@ -6,6 +6,9 @@
 // TerraLib
 #include <PluginParameters.h>
 #include <TeDataTypes.h>
+#include <stdlib.h>
+#include "mwv.h"
+#include "geometryreader.h"
 
 // forward declarations
 class TeDatabase;
@@ -15,13 +18,20 @@ class TePolygonSet;
 class TeProjection;
 class TeTheme;
 
+enum enumDiagramType {
+        Voronoi,
+        MWVoronoi,
+        Delaunay,
+    };
+
 class VoronoiWindow : public UIVoronoi
 {
     Q_OBJECT
 
 public:
    
-    VoronoiWindow(PluginParameters* pp, const bool& delaunay = false);
+    VoronoiWindow(PluginParameters* pp, const enumDiagramType diagramType=Voronoi);
+
     
     ~VoronoiWindow();
     
@@ -40,17 +50,19 @@ private:
 
     bool createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TeLineSet& ls);
     
-    bool createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps);
-
+    TeLayer * createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps);
+    TeTheme * createTheme(std::string layername, TeDatabase *db, TeView *view);
+    bool clipLayer(TeLayer *diagramLayer, TeTheme *themeDelimiter, TeDatabase *db);
+    bool copyAttributes(TeLayer *diagramLayer, TeTheme *points, TeDatabase *db);
     TeTheme* getTheme(const std::string& name);
     TeLayer* getLayer(const std::string& name);
-    
+    std::vector<std::string> listAttributes(TeTheme* theme);
     bool isLayerNameValid(const std::string& name);
-		
+    bool MWDiagramAsTePolygonSet(mwv::MWVDiagram &diagram, TePolygonSet &ps);
 private:
 
     PluginParameters* plugin_params_;
-    bool delaunay_;
+    enumDiagramType diagramType;
 };
 
 #endif // __VORONOIDIAGRAM_WINDOW_H_

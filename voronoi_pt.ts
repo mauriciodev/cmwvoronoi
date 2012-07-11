@@ -51,6 +51,14 @@
         <source>Generate also the Layer of Lines</source>
         <translation>Gerar também o Layer de Linhas</translation>
     </message>
+    <message>
+        <source>Select a weighting attribute</source>
+        <translation>Escolha o atributo de ponderação</translation>
+    </message>
+    <message>
+        <source>Select the layer that contains the break lines</source>
+        <translation>Escolha o Layer que contém as linhas de quebra</translation>
+    </message>
 </context>
 <context>
     <name>VoronoiDiagramPlugin</name>
@@ -73,6 +81,10 @@
     <message>
         <source>Diagrams</source>
         <translation>Diagramas</translation>
+    </message>
+    <message>
+        <source>Voronoi Ponderado Multiplicativamente</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -107,11 +119,11 @@
     </message>
     <message>
         <source>The Voronoi Diagram was generated successfully!</source>
-        <translation>O Diagrama de Voronoi foi gerado com sucesso!</translation>
+        <translation type="obsolete">O Diagrama de Voronoi foi gerado com sucesso!</translation>
     </message>
     <message>
         <source>The Delaunay Diagram was generated successfully!</source>
-        <translation>O Diagrama de Delaunay foi gerado com sucesso!</translation>
+        <translation type="obsolete">O Diagrama de Delaunay foi gerado com sucesso!</translation>
     </message>
     <message>
         <source>Connect to a database first.</source>
@@ -127,7 +139,7 @@
     </message>
     <message>
         <source>Error adding geometric representation to new layer.</source>
-        <translation type="obsolete">Erro adicionando a representação geométrica no novo Layer.</translation>
+        <translation type="unfinished">Erro adicionando a representação geométrica no novo Layer.</translation>
     </message>
     <message>
         <source>Error saving the new layer table.</source>

@@ -4,25 +4,58 @@ mwv_base::mwv_base()
 {
 }
 
+Point_2 mwv_base::intersectWithExtent(Point_2 p0, Point_2 p1, Bbox_2 extent) {
+    //Vector_2 diagonal(Point_2(extent.xmin(), extent.ymin()), Point_2(extent.xmax(), extent.ymax()));
+    //double maxLength=2.*diagonal.squared_length();
+
+    Ray_2 ray(p0,p1);
+    Point_2 pBoundary;
+    Rectangle_2 box(Point_2(extent.xmin(),extent.ymin()),Point_2(extent.xmax(),extent.ymax()));
+    //std::cout<<extent<<std::endl;
+    CGAL::Object intersection_obj = CGAL::intersection(ray,box);
+    //std::cout<<ray<<std::endl;
+    if (const Point_2 *ipoint = CGAL::object_cast<Point_2 >(&intersection_obj)) {
+
+        // handle the point intersection case with *ipoint.
+        // point is inside the extent
+        //std::cout<<(*ipoint)<<std::endl;
+        return *ipoint;
+
+    } else
+        if (const Segment_2 *iseg = CGAL::object_cast<Segment_2>(&intersection_obj)) {
+            // handle the segment intersection case with *iseg.
+            //point is outside the extent
+            return iseg->target();
+        } else {
+            // handle the no intersection case.
+
+        }
+
+
+    //CGAL::assign(pBoundary,intersection_obj);
+
+
+
+}
 
 void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Curve_2 &curve) {
-    //FIXME line length
+    /*FIXME line length*/
     //Aurenhammer's formulae
     double s2y=CGAL::to_double(s2.y());
     double s1y=CGAL::to_double(s1.y());
     double s2x=CGAL::to_double(s2.x());
     double s1x=CGAL::to_double(s1.x());
     if(w1==w2) {
-        //double mx=CGAL::to_double((s1x+s2x)/2);
-        //double my=CGAL::to_double((s1y+s2y)/2);
-        //double dx=CGAL::to_double(s1x-s2x);
-        //double dy=CGAL::to_double(s1y-s2y);
-        //double m=atan(-1.*dx/dy);
+        /*double mx=CGAL::to_double((s1x+s2x)/2);
+        double my=CGAL::to_double((s1y+s2y)/2);
+        double dx=CGAL::to_double(s1x-s2x);
+        double dy=CGAL::to_double(s1y-s2y);
+        double m=atan(-1.*dx/dy);
 
-        //double d=100*(dx*dx+dy*dy);
+        double d=100*(dx*dx+dy*dy);
 
-        //Kernel::Point_2 p1(-d*cos(m)+mx,-d*sin(m)+my),p2(d*cos(m)+mx,d*sin(m)+my);
-        //curve=Segment_2(p1,p2);
+        Kernel::Point_2 p1(-d*cos(m)+mx,-d*sin(m)+my),p2(d*cos(m)+mx,d*sin(m)+my);
+        curve=Segment_2(p1,p2);*/
         w1=w2*1.001;
     }
     //} else {

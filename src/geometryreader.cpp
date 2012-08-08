@@ -52,8 +52,11 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
         i++;
         w.push_back(poFeature->GetFieldAsDouble(iField)) ;
         poGeometry = poFeature->GetGeometryRef();
+        cout<<poGeometry->getGeometryType()<<endl;
+        cout<<wkbPoint<<endl;
         if( poGeometry != NULL && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint )  {
            OGRPoint *poPoint = (OGRPoint *) poGeometry;
+           cout<< poPoint->getX()<<", "<<poPoint->getY()<<endl;
            sites.push_back(Point_2(poPoint->getX(),poPoint->getY()));
         } else  {
            printf( "no point geometry\n" );
@@ -366,6 +369,7 @@ Point_2 GeometryReader::constrainInside(Point_2 p, Bbox_2 box) {
     return Point_2(px,py);
 }
 
+
 bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string filename) {
     //FIXME handle holes
     const char *pszDriverName = "ESRI Shapefile";
@@ -429,6 +433,28 @@ bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string
             ring.addPoint(&p0);
             pol.addRing(&ring); //if (ring.IsValid())
             cout<<ring.getNumPoints()<<endl;
+
+            //reading holes
+            typename mwv::Polygon_with_holes_2::Hole_const_iterator hit;
+            std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
+            for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
+                OGRLinearRing innerRing;
+                for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
+                    vector<double>x,y;
+
+                    arcAsLinestring(*cIt,x,y);
+                    for(uint i=0; i<x.size()-1;i++) {
+                        if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                            innerRing.addPoint(x[i],y[i]);
+                        }
+                    }
+                }
+                OGRPoint p0;
+                innerRing.getPoint(0,&p0);
+                innerRing.addPoint(&p0);
+                pol.addRing(&innerRing);
+
+            }
         }
 
 
@@ -446,4 +472,40 @@ bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string
     OGRDataSource::DestroyDataSource( poDS );
     CPLFree(options);
     return 0;
+}
+
+bool GeometryReader::getObstaclesFromGDAL(std::string filename, obstacleVector &obstacles, int sizeLimit) {
+    OGRDataSource *poDS;
+    poDS = OGRSFDriverRegistrar::Open( filename.c_str(), FALSE );
+    if( poDS == NULL ) return false;
+    OGRLayer  *poLayer= poDS->GetLayer(0);
+    if( poLayer == NULL ) return false;
+    OGRFeature *poFeature;
+
+    OGRGeometry *poGeometry;
+    poLayer->ResetReading();
+    int i=0;
+    while( ( (poFeature = poLayer->GetNextFeature()) != NULL ) && ((sizeLimit==0) || (i<sizeLimit))) {
+        i++;
+        poGeometry = poFeature->GetGeometryRef();
+        cout<<poGeometry->getGeometryType()<<endl;
+        cout<<wkbPoint<<endl;
+        if( poGeometry != NULL && wkbFlatten(poGeometry->getGeometryType()) == wkbLineString )  {
+           OGRLineString *poLine = (OGRLineString *) poGeometry;
+           OGRPoint poPoint;
+           obstacle ob;
+           for (int j=0; j<poLine->getNumPoints(); j++) {
+               poLine->getPoint(j,&poPoint);
+               ob.push_back(Point_2(poPoint.getX(),poPoint.getY()));
+           }
+
+           //cout<< poPoint->getX()<<", "<<poPoint->getY()<<endl;
+           obstacles.push_back(ob);
+        } else  {
+           printf( "no point geometry\n" );
+        }
+    }
+
+    return true;
+
 }

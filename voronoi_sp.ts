@@ -51,6 +51,14 @@
         <source>Generate also the Layer of Lines</source>
         <translation>Generar también la capa de las líneas</translation>
     </message>
+    <message>
+        <source>Select a weighting attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select the layer that contains the break lines</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>VoronoiDiagramPlugin</name>
@@ -73,6 +81,10 @@
     <message>
         <source>Diagrams</source>
         <translation>Diagramas</translation>
+    </message>
+    <message>
+        <source>Voronoi Ponderado Multiplicativamente</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -107,11 +119,11 @@
     </message>
     <message>
         <source>The Voronoi Diagram was generated successfully!</source>
-        <translation>El diagrama de Voronoi se ha generado con éxito!</translation>
+        <translation type="obsolete">El diagrama de Voronoi se ha generado con éxito!</translation>
     </message>
     <message>
         <source>The Delaunay Diagram was generated successfully!</source>
-        <translation>El diagrama de Delaunay se ha generado con éxito!</translation>
+        <translation type="obsolete">El diagrama de Delaunay se ha generado con éxito!</translation>
     </message>
     <message>
         <source>Connect to a database first.</source>
@@ -127,7 +139,7 @@
     </message>
     <message>
         <source>Error adding geometric representation to new layer.</source>
-        <translation type="obsolete">Error al agregar la representación geométrica de una nueva capa.</translation>
+        <translation type="unfinished">Error al agregar la representación geométrica de una nueva capa.</translation>
     </message>
     <message>
         <source>Error saving the new layer table.</source>

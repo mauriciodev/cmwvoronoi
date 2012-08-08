@@ -58,10 +58,6 @@ void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MW
 
 }
 
-bool mwv::getDiagram2(siteVector &sites, weightVector &weights, CGAL::Bbox_2 extent) {
-
-}
-
 
 mwv::Polygon_2 mwv::construct_polygon (const Circle_2& circle) {
   // Subdivide the circle into two x-monotone arcs.

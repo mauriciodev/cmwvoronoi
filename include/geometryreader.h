@@ -24,6 +24,7 @@ public:
     bool getPointsFromGDAL(std::string filename, std::string weightField, siteVector &v, weightVector & w, int sizeLimit=0);
     bool getPointsFromTerraLib(std::string theme);
     void getTestPoints(siteVector &v, weightVector &w);
+    bool getObstaclesFromGDAL(std::string filename, obstacleVector &obstacles ,int sizeLimit=0);
     bool exportPointsToGDAL( vector<Point_2> &pointList,std::string filename);
     bool exportArrangementToGDAL(Arr &Arrangement, std::string filename);
     bool exportArrangementFacesToGDAL(Arr &arr, std::string filename, Bbox_2 extent);

@@ -1,0 +1,1 @@
+CMakeLists.txt file should be placed under terralibdir\build\cmake\terraViewPlugins\Voronoi.

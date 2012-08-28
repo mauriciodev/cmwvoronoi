@@ -19,7 +19,7 @@ void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MW
         for (unsigned int j=0; j<sites.size();j++) {
             if (i!=j) {
                 //cout<<S.number_of_polygons_with_holes()<<endl;
-                Curve_2 c;
+                Data_Curve_2 c;
                 ApoloniusCircle(sites[i],weights[i],sites[j],weights[j],c);
                 Polygon_set_2 dominance;
                 dominance.clear();

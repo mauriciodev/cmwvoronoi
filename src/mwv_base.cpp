@@ -28,7 +28,7 @@ Point_2 mwv_base::intersectWithExtent(Point_2 p0, Point_2 p1, Bbox_2 extent) {
             return iseg->target();
         } else {
             // handle the no intersection case.
-
+            return Point_2(0,0);
         }
 
 
@@ -38,7 +38,7 @@ Point_2 mwv_base::intersectWithExtent(Point_2 p0, Point_2 p1, Bbox_2 extent) {
 
 }
 
-void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Curve_2 &curve) {
+void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Data_Curve_2 &curve) {
     /*FIXME line length*/
     //Aurenhammer's formulae
     double s2y=CGAL::to_double(s2.y());
@@ -67,7 +67,7 @@ void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Cur
         double r=w1*w2*d/(w1*w1-w2*w2);
         //cout<<LineString "Radius:" <<CGAL::to_double(r)<<endl;
         if (r<0) r=r*-1;
-        curve =Circle_2( Kernel::Point_2(cx,cy), r*r);
+        curve =Data_Curve_2(Circle_2( Kernel::Point_2(cx,cy), r*r),edgeData::DominanceArc);
     //}
 }
 
@@ -89,11 +89,11 @@ CGAL::Bbox_2 mwv_base::getBoundingBox(siteVector &sites) {
     else if (toly==0) { toly=tolx; }
     //else toly=tolx=10;
 
-    std::cout <<minx-tolx << miny-toly << maxx+tolx << maxy+toly<<std::endl;
+    //std::cout <<minx-tolx << miny-toly << maxx+tolx << maxy+toly<<std::endl;
     return Bbox_2(minx-tolx,miny-toly,maxx+tolx,maxy+toly);
 }
 
-Point_2 mwv_base::representativePoint(Arr::Halfedge_handle eit) {
+Point_2 mwv_base::representativePoint(Arrangement_2::Halfedge_handle eit) {
     Vector_2 v1,v2; //middle
     Point_2 res;
     //cout << eit->curve().source <<", "<< eit->curve().target() <<", " << m <<endl ;

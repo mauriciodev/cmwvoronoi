@@ -52,11 +52,11 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
         i++;
         w.push_back(poFeature->GetFieldAsDouble(iField)) ;
         poGeometry = poFeature->GetGeometryRef();
-        cout<<poGeometry->getGeometryType()<<endl;
-        cout<<wkbPoint<<endl;
+        //cout<<poGeometry->getGeometryType()<<endl;
+        //cout<<wkbPoint<<endl;
         if( poGeometry != NULL && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint )  {
            OGRPoint *poPoint = (OGRPoint *) poGeometry;
-           cout<< poPoint->getX()<<", "<<poPoint->getY()<<endl;
+           //cout<< poPoint->getX()<<", "<<poPoint->getY()<<endl;
            sites.push_back(Point_2(poPoint->getX(),poPoint->getY()));
         } else  {
            printf( "no point geometry\n" );
@@ -66,7 +66,7 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
     return true;
 }
 
-bool GeometryReader::exportArrangementToGDAL(Arr &arr, std::string filename) {
+bool GeometryReader::exportArrangementToGDAL(Arrangement_2 &arr, std::string filename) {
     const char *pszDriverName = "ESRI Shapefile";
     OGRSFDriver *poDriver;
     poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(pszDriverName );
@@ -93,11 +93,33 @@ bool GeometryReader::exportArrangementToGDAL(Arr &arr, std::string filename) {
         printf( "Layer creation failed.\n" );
         return 1;
     }
+
+    OGRFieldDefn oField( "edgetype", OFTString );
+    oField.SetWidth(16);
+    if( poLayer->CreateField( &oField ) != OGRERR_NONE )
+    {
+        printf( "Creating field failed.\n" );
+        exit( 1 );
+    }
+    OGRFieldDefn oField2( "idgen", OFTInteger);
+    if( poLayer->CreateField( &oField2 ) != OGRERR_NONE )
+    {
+        printf( "Creating field failed.\n" );
+        exit( 1 );
+    }
+    OGRFieldDefn oField3( "obstacleUp", OFTInteger);
+    if( poLayer->CreateField( &oField3 ) != OGRERR_NONE )
+    {
+        printf( "Creating field failed.\n" );
+        exit( 1 );
+    }
+
     OGRFeature *poFeature;
 
-    Arr::Edge_const_iterator eit;
-    //Arr::Halfedge_handle eit;
+    Arrangement_2::Edge_const_iterator eit;
+    //Arrangement_2::Halfedge_handle eit;
     std::cout << arr.number_of_edges() << " edges:" << std::endl;
+    const char * edgetypes[] = {"VisibilityLine", "DominanceArc", "BreakLine"};
 
     for (eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
         poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
@@ -113,6 +135,13 @@ bool GeometryReader::exportArrangementToGDAL(Arr &arr, std::string filename) {
         }
         if (x.size()>0) {
             poFeature->SetGeometry( &line );
+            edgeData fields=eit->curve().data();
+            //cout<<edgetypes[fields.edgeType]<<endl;
+
+            poFeature->SetField("edgetype",edgetypes[fields.edgeType]);
+            poFeature->SetField("idgen",int(fields.generatorPointId));
+            //poFeature->SetField("obsBefore",fields.isObstacleBefore);
+
             if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
                 printf( "Failed to create feature in shapefile.\n" );
                 exit( 1 );
@@ -125,7 +154,7 @@ bool GeometryReader::exportArrangementToGDAL(Arr &arr, std::string filename) {
     return 0;
 }
 
-bool GeometryReader::arcAsLinestring(Arr::X_monotone_curve_2 curve, vector<double> &outX, vector<double> &outY, double tol) {
+bool GeometryReader::arcAsLinestring(Arrangement_2::X_monotone_curve_2 curve, vector<double> &outX, vector<double> &outY, double tol) {
     /*FIXME number of vertexes*/
     if (curve.is_circular()) {
     //if (false){
@@ -227,7 +256,7 @@ bool GeometryReader::exportPointsToGDAL(vector<Point_2> &pointList,std::string f
     }
     OGRFeature *poFeature;
 
-        //Arr::Halfedge_handle eit;
+        //Arrangement_2::Halfedge_handle eit;
 
     vector<Point_2>::iterator pIt;
     for (pIt=pointList.begin(); pIt!=pointList.end(); ++pIt) {
@@ -250,7 +279,7 @@ bool GeometryReader::exportPointsToGDAL(vector<Point_2> &pointList,std::string f
     return 0;
 }
 
-bool GeometryReader::exportArrangementFacesToGDAL(Arr &arr, std::string filename,Bbox_2 extent) {
+bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::string filename,Bbox_2 extent) {
     //FIXME handle holes
     const char *pszDriverName = "ESRI Shapefile";
     OGRSFDriver *poDriver;
@@ -280,11 +309,11 @@ bool GeometryReader::exportArrangementFacesToGDAL(Arr &arr, std::string filename
     }
     OGRFeature *poFeature;
 
-    Arr::Face_const_handle fit;
+    Arrangement_2::Face_const_handle fit;
     std::cout << arr.number_of_faces() << " faces:" << std::endl;
     for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
         poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
-        Arr::Edge_const_iterator eit;
+        Arrangement_2::Edge_const_iterator eit;
         OGRPolygon pol;
         OGRLinearRing ring;
 
@@ -300,7 +329,7 @@ bool GeometryReader::exportArrangementFacesToGDAL(Arr &arr, std::string filename
             ring.addPoint(xmax,ymin);
             std::cout << "Unbounded face. " << std::endl;
         } else {
-            Arr::Ccb_halfedge_const_circulator curr = fit->outer_ccb();
+            Arrangement_2::Ccb_halfedge_const_circulator curr = fit->outer_ccb();
             do  {
 
                 //curr->curve();
@@ -432,11 +461,11 @@ bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string
             ring.getPoint(0,&p0);
             ring.addPoint(&p0);
             pol.addRing(&ring); //if (ring.IsValid())
-            cout<<ring.getNumPoints()<<endl;
+            //cout<<ring.getNumPoints()<<endl;
 
             //reading holes
             typename mwv::Polygon_with_holes_2::Hole_const_iterator hit;
-            std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
+            //std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
             for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
                 OGRLinearRing innerRing;
                 for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
@@ -488,8 +517,8 @@ bool GeometryReader::getObstaclesFromGDAL(std::string filename, obstacleVector &
     while( ( (poFeature = poLayer->GetNextFeature()) != NULL ) && ((sizeLimit==0) || (i<sizeLimit))) {
         i++;
         poGeometry = poFeature->GetGeometryRef();
-        cout<<poGeometry->getGeometryType()<<endl;
-        cout<<wkbPoint<<endl;
+        //cout<<poGeometry->getGeometryType()<<endl;
+        //cout<<wkbPoint<<endl;
         if( poGeometry != NULL && wkbFlatten(poGeometry->getGeometryType()) == wkbLineString )  {
            OGRLineString *poLine = (OGRLineString *) poGeometry;
            OGRPoint poPoint;

@@ -29,7 +29,7 @@ public:
     bool visibilityLines_mauricio(Point_2 p0, obstacle &ob, vector<Segment_2> &visLines, Bbox_2 extent);
     CGAL::Bbox_2 getBoundingBox(siteVector &sites,obstacleVector &obstacles);
 private:
-    bool ProcessVisibilityLine(Arrangement_2::Halfedge &e, siteVector &sites,obstacleVector &obstacles, bool hasHitObstacleLeft=false, bool hasHitObstacleRight=false);
+    bool ProcessVisibilityLine(Arrangement_2::Halfedge_around_vertex_const_circulator e, siteVector &sites,obstacleVector &obstacles, bool hasHitObstacleLeft=false, bool hasHitObstacleRight=false);
 
 
 private:
@@ -43,8 +43,13 @@ private:
         return(Point_2(CGAL::to_double(p.x()),CGAL::to_double(p.y())));
     }
     Arrangement_2::Point_2 convertPoint2(Point_2 p){
-        //const CGAL::_One_root_point_2<CGAL::Lazy_exact_nt<CGAL::Gmpq>,true> p
-        return(Arrangement_2::Point_2(CGAL::to_double(p.x()),CGAL::to_double(p.y())));
+        //cout<<p2<<endl;
+        //cout<<CGAL::to_double(p.x()) <<" "<<CGAL::to_double(p.y())<<endl;
+        //int decimals=1000000;
+        NT x=CGAL::to_double(p.x());
+        NT y=CGAL::to_double(p.y());
+        //cout<<Arrangement_2::Point_2(x,y)<<endl;
+        return(Arrangement_2::Point_2(x,y));
     }
     //int numberOfVertices (Circular_arc_2 &arc1, double tol);
 

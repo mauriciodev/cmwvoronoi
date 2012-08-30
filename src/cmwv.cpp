@@ -29,11 +29,25 @@ bool cmwv::visibilityLines_mauricio(Point_2 p0, obstacle &ob, vector<Segment_2> 
 void cmwv::getDiagram(siteVector &sites, weightVector &weights, obstacleVector &obstacles, Bbox_2 extent) {
     //building arrangement of Boundaries
     Arrangement_2 arrangement;
+    vector<Arrangement_2::Vertex_handle> siteVertex;
+    //Landmarks_pl pl;
+    //pl.attach(arrangement);
+    cout<<setprecision(15)<<fixed;
+    for (unsigned int i=0; i<sites.size();i++) {
+        Arrangement_2::Vertex_handle siteV;
+        arrangement.insert_in_face_interior(convertPoint2(sites[i]), arrangement.unbounded_face());
+        siteVertex.push_back(siteV);
+    }
     //adding obstacles
     for (unsigned int i=0;i<obstacles.size();i++) {//for each obstacle
         for (unsigned int j=0;j<obstacles[i].size()-1;j++) { //for each vertex besides the last
-            if (obstacles[i][j]!=obstacles[i][j+1]){
+
+            Point_2 p1=obstacles[i][j],p2=obstacles[i][j+1];
+            //cout<< p1 <<" / "<< p2<<endl;
+            bool areNotEqual=(CGAL::compare(p1.x(), p2.x())!=CGAL::EQUAL) && (CGAL::compare(p1.y(), p2.y())!=CGAL::EQUAL);
+            if (areNotEqual){
                 Data_Curve_2 c= Data_Curve_2(Segment_2(obstacles[i][j],obstacles[i][j+1]),edgeData(edgeData::BreakLine));
+                //cout<<Segment_2(obstacles[i][j],obstacles[i][j+1])<<endl;
                 //cout<< obstacles[i][j].x()<<" "<<obstacles[i][j].y()<<" / "<<  obstacles[i][j+1].x()<<" "<<obstacles[i][j+1].y()<<endl;
                 insert(arrangement,c);
             }
@@ -48,8 +62,11 @@ void cmwv::getDiagram(siteVector &sites, weightVector &weights, obstacleVector &
                 //cout<<visLines[k]<<endl;
                 Data_Curve_2 c=Data_Curve_2(visLines[k],edgeData(edgeData::VisibilityLine, j, i, k));
                 insert(arrangement, c);
-
             }
+            //cout<<visLines[k]<<endl;
+            //
+
+
         }
     }
 
@@ -69,21 +86,33 @@ void cmwv::getDiagram(siteVector &sites, weightVector &weights, obstacleVector &
     //traverse searching for visibility segments
     //TODO:start with
     Arrangement_2::Halfedge_handle ecit;
-    //Landmarks_pl pl;
-    //pl.attach(arrangement);
     for (int i=0; i<sites.size(); i++) {
-        /*CGAL::Object locatedObj;//=pl.locate(convertPoint2(sites[i]));
-        Arrangement_2::Vertex_handle v;
+
+        Arrangement_2::Vertex_const_handle    v;
+        Arrangement_2::Halfedge_const_handle  e;
+        Arrangement_2::Face_const_handle      f;
+        Naive_pl         naive_pl (arrangement);
+        CGAL::Object locatedObj=naive_pl.locate(convertPoint2(sites[i]));
         if (CGAL::assign(v,locatedObj)) { //found the site
             //traverse its visibility lines
             Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
             first=curr=v->incident_halfedges();
             do {
+                //cout<<curr->curve().data().generatorPointId<<endl;
                 //Arrangement_2::Halfedge_const_handle he=curr->handle();
-                //ProcessVisibilityLine(curr, sites,obstacles);
+                ProcessVisibilityLine(curr, sites,obstacles);
             } while (++curr!=first);
 
-        }*/
+        } else if (CGAL::assign(e,locatedObj)) { //found an edge
+            cout << e->curve().data().generatorPointId<<endl;
+        }else if (CGAL::assign(f,locatedObj)) { //found an edge
+            cout << "face"<<endl;
+            if(f->is_unbounded()) {
+                std::cout << "hit nothing." << std::endl;
+            } else {
+
+            }
+        }
     }
     /*
     for (ecit = arrangement.edges_begin(); ecit != arrangement.edges_end(); ++ecit) {
@@ -102,7 +131,10 @@ void cmwv::getDiagram(siteVector &sites, weightVector &weights, obstacleVector &
     cout <<"Arrangement built."<<endl;
     cout <<"Vertices:" << arrangement.number_of_vertices()<<endl;
     cout <<"Edges:" << arrangement.number_of_edges()<<endl;
+    //Arrangement_2::Halfedge_handle p0=siteVertex[0];;
+    Arrangement_2::Vertex t;
 
+    //cout<< siteVertex[0]->degree () <<endl;
 
 
     //Removing non voronoi edges
@@ -174,33 +206,39 @@ bool cmwv::isObstacleBefore(Arrangement_2::Halfedge_handle e, Point_2 obstaclePo
 
 }
 
-bool cmwv::ProcessVisibilityLine(Arrangement_2::Halfedge &e, siteVector &sites,obstacleVector &obstacles, bool hasHitObstacleLeft, bool hasHitObstacleRight) {
+bool cmwv::ProcessVisibilityLine(Arrangement_2::Halfedge_around_vertex_const_circulator e, siteVector &sites,obstacleVector &obstacles, bool hasHitObstacleLeft, bool hasHitObstacleRight) {
 
-    int generatorId=e.curve().data().generatorPointId;
-    int obstacleId=e.curve().data().obstacleId;
-    int obstacleId2=e.curve().data().obstacleSubId;
+    int generatorId=e->curve().data().generatorPointId;
+    int obstacleId=e->curve().data().obstacleId;
+    int obstacleId2=e->curve().data().obstacleSubId;
 
     //Point_2 obsPoint=obstacles[obstacleId][obstacleId2];
     //bool bIsObstacleBefore= isObstacleBefore(e,obstacles[obstacleId][obstacleId2],sites[generatorId]);
     //e.curve().data().isObstacleBefore=bIsObstacleBefore;
 
-    Arrangement_2::Vertex_const_handle v=e.target();
     Arrangement_2::Vertex v2;
-    //Arrangement_2::Halfedge_handle nextVisibilityLineEdge=e;
-    Line_2 l(convertPoint(e.curve().source()),convertPoint(e.curve().target()));
+    Arrangement_2::Vertex_const_handle v=e->source();
+    Arrangement_2::Halfedge_around_vertex_const_circulator nextVisibilityLineEdge=e;
+    Line_2 l(convertPoint(e->curve().source()),convertPoint(e->curve().target()));
+
+    cout<<v->point()<<endl;
+    Root_Point_2 p0=e->curve().source();
     Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
     first = curr = v->incident_halfedges();
-    for(curr=(++v->incident_halfedges());curr!=first;++curr) {
+    do {
         //every line that touches that vertex
-        if (e.curve().data().generatorPointId==curr->curve().data().generatorPointId) {
-                /*if (e.curve()!=curr->curve()) {
-                    //this is the next edge of the same visibility line. save for later to continue processing
+        cout <<curr->curve().data().generatorPointId <<endl;
+        if (e->curve().data().generatorPointId==curr->curve().data().generatorPointId) {
 
-                }*/
-            //nextVisibilityLineEdge=curr;
+
+            if (p0.equals(curr->curve().source())) {
+                    //this is the next edge of the same visibility line. save for later to continue processing
+                    nextVisibilityLineEdge=curr;
+                }
+
         } else {
                 //every line besides the visibility line must be tested for visibility
-                if (e.curve().data().edgeType==edgeData::BreakLine) {
+                if (e->curve().data().edgeType==edgeData::BreakLine) {
                     //TODO check if any line has hit the vertex at the same point
                     //check if it is left or right
                     Point_2 obstaclePoint=convertPoint(curr->curve().target());
@@ -217,7 +255,7 @@ bool cmwv::ProcessVisibilityLine(Arrangement_2::Halfedge &e, siteVector &sites,o
         /*// Note that the current halfedge is directed from u to v:
         Arrangement_2::Vertex_const_handle u = curr->source();
         std::cout << " (" << u->point() << ")";*/
-    }
+    }  while (++curr != first);
 
 
 

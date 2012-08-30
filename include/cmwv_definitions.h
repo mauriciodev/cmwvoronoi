@@ -5,16 +5,18 @@
 //#include <CGAL/Gmpq.h>
 
 //typedef CGAL::Gmpq                                    Number_type;
-
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#include <CGAL/Random.h>
-#include <CGAL/point_generators_2.h>
+#include <CGAL/MP_Float.h>
+#include <CGAL/Quotient.h>
+//#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#define myTol 0.001
 
 #include <CGAL/Cartesian.h>
 #include <CGAL/Arr_circle_segment_traits_2.h>
 #include <CGAL/Arrangement_2.h>
-//#include <CGAL/Arrangement_with_history_2.h>
+#include <CGAL/Arrangement_with_history_2.h>
 #include <CGAL/Arr_curve_data_traits_2.h>
+#include <CGAL/Arr_naive_point_location.h>
+
 
 class edgeData {
 public:
@@ -31,8 +33,11 @@ public:
 
 };
 
-//typedef CGAL::Cartesian<Number_type>                  Kernel;
-typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
+//
+//typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
+typedef CGAL::Quotient<CGAL::MP_Float>                      NT;
+typedef CGAL::Cartesian<NT>                                 Kernel;
+
 //basic geometries
 typedef Kernel::Circle_2                              Circle_2;
 typedef Kernel::Line_2                                Line_2;
@@ -51,8 +56,7 @@ typedef Segment_Traits_2::Point_2                     Root_Point_2;
 typedef Segment_Traits_2::Curve_2                     Curve_2;
 typedef Data_Traits_2::Curve_2                        Data_Curve_2;
 typedef CGAL::Arrangement_2<Data_Traits_2>            Arrangement_2;
-
-//#define NT Number_type
+typedef CGAL::Arr_naive_point_location<Arrangement_2>           Naive_pl;
 
 
 

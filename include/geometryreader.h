@@ -12,7 +12,8 @@ using namespace std;
 #include "cpl_string.h"
 #include "cpl_conv.h"
 
-
+#include <CGAL/Random.h>
+#include <CGAL/point_generators_2.h>
 
 
 class GeometryReader

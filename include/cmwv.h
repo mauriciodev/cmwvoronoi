@@ -29,7 +29,7 @@ public:
     bool visibilityLines_mauricio(Point_2 p0, obstacle &ob, vector<Segment_2> &visLines, Bbox_2 extent);
     CGAL::Bbox_2 getBoundingBox(siteVector &sites,obstacleVector &obstacles);
 private:
-    bool ProcessVisibilityLine(Arrangement_2::Halfedge_around_vertex_const_circulator e, siteVector &sites,obstacleVector &obstacles, bool hasHitObstacleLeft=false, bool hasHitObstacleRight=false);
+    bool ProcessVisibilityLine(Arrangement_2::Halfedge_around_vertex_circulator e, siteVector &sites,obstacleVector &obstacles, bool hasHitObstacleLeft=false, bool hasHitObstacleRight=false);
 
 
 private:
@@ -51,6 +51,8 @@ private:
         //cout<<Arrangement_2::Point_2(x,y)<<endl;
         return(Arrangement_2::Point_2(x,y));
     }
+    void findGenerators(Arrangement_2 &arr, vector<Arrangement_2::Vertex_handle> &vGenerators, siteVector &sites);
+    void findGeneratorsOld(Arrangement_2 &arr, vector<Arrangement_2::Vertex_handle> &vGenerators, siteVector &sites);
     //int numberOfVertices (Circular_arc_2 &arc1, double tol);
 
 };

@@ -113,6 +113,18 @@ bool GeometryReader::exportArrangementToGDAL(Arrangement_2 &arr, std::string fil
         printf( "Creating field failed.\n" );
         exit( 1 );
     }
+    int nsites;
+    nsites=arr.edges_begin()->curve().data().maskedSites.size();
+    for (unsigned int i=0;i<nsites;i++) {
+        std::stringstream ss;
+        ss<<"site"<<i;
+        OGRFieldDefn oField3(ss.str().c_str(), OFTInteger);
+        if( poLayer->CreateField( &oField3 ) != OGRERR_NONE )
+        {
+            printf( "Creating field failed.\n" );
+            exit( 1 );
+        }
+    }
 
     OGRFeature *poFeature;
 
@@ -141,7 +153,11 @@ bool GeometryReader::exportArrangementToGDAL(Arrangement_2 &arr, std::string fil
             poFeature->SetField("edgetype",edgetypes[fields.edgeType]);
             poFeature->SetField("idgen",int(fields.generatorPointId));
             //poFeature->SetField("obsBefore",fields.isObstacleBefore);
-
+            for (unsigned int i=0;i<fields.maskedSites.size();i++) {
+                std::stringstream ss;
+                ss<<"site"<<i;
+                poFeature->SetField(ss.str().c_str(),int(fields.maskedSites[i]));
+            }
             if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
                 printf( "Failed to create feature in shapefile.\n" );
                 exit( 1 );

@@ -16,6 +16,7 @@
 #include <CGAL/Arrangement_with_history_2.h>
 #include <CGAL/Arr_curve_data_traits_2.h>
 #include <CGAL/Arr_naive_point_location.h>
+#include <vector>
 
 
 class edgeData {
@@ -23,12 +24,14 @@ public:
     enum EdgeType {VisibilityLine, DominanceArc, BreakLine};
     EdgeType edgeType;
     int generatorPointId,obstacleId,obstacleSubId;
+    std::vector<bool> maskedSites;
     edgeData() {};
-    edgeData(EdgeType t, int generatorId=-1, int obstacleId=-1,int obstacleSubId=-1) {
+    edgeData(EdgeType t, int nSites=0, int generatorId=-1, int obstacleId=-1,int obstacleSubId=-1) {
         this->edgeType=t;
         this->generatorPointId=generatorId;
         this->obstacleId=obstacleId;
         this->obstacleSubId=obstacleSubId;
+        this->maskedSites.resize(nSites);
     }
 
 };

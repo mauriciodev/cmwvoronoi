@@ -31,7 +31,7 @@ public:
     bool exportArrangementToGDAL(Arrangement_2 &Arr, std::string filename);
     bool exportArrangementFacesToGDAL(Arrangement_2 &Arr, std::string filename, Bbox_2 extent);
     bool exportDiagramToGDAL(std::string filename);
-    bool exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string filename);
+    bool exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string filename);
     bool arcAsLinestring(Arrangement_2::X_monotone_curve_2 curve, vector<double> &outX, vector<double> &outY, double tol=0.1);
     double measureAngle(Point_2 p1, Point_2 p0, Point_2 p2);
     bool isInside(Point_2 p, Bbox_2 box);

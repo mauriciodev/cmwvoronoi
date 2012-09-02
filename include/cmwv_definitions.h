@@ -61,8 +61,14 @@ typedef Data_Traits_2::Curve_2                        Data_Curve_2;
 typedef CGAL::Arrangement_2<Data_Traits_2>            Arrangement_2;
 typedef CGAL::Arr_naive_point_location<Arrangement_2>           Naive_pl;
 
-
-
+#include <CGAL/General_polygon_set_2.h>
+#include <CGAL/Gps_circle_segment_traits_2.h>
+typedef CGAL::Gps_circle_segment_traits_2<Kernel>                 GPS_Traits_2;
+typedef CGAL::General_polygon_set_2<GPS_Traits_2>                 Polygon_set_2;
+typedef GPS_Traits_2::General_polygon_2                           Polygon_2;
+typedef GPS_Traits_2::General_polygon_with_holes_2                Polygon_with_holes_2;
+typedef std::vector<Polygon_set_2>                                MWVDiagram;
+typedef GPS_Traits_2::X_monotone_curve_2                          GPS_Segment_2;
 
 //CMWV Definitions
 typedef std::vector<double> weightVector;

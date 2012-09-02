@@ -415,7 +415,7 @@ Point_2 GeometryReader::constrainInside(Point_2 p, Bbox_2 box) {
 }
 
 
-bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string filename) {
+bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string filename) {
     //FIXME handle holes
     const char *pszDriverName = "ESRI Shapefile";
     OGRSFDriver *poDriver;
@@ -447,18 +447,18 @@ bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string
 
 
     std::cout << diagram.size() << " areas created." << std::endl;
-    for (mwv::MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
+    for (MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
         poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
         OGRPolygon pol;
-        std::list<mwv::Polygon_with_holes_2> res;
-        std::list<mwv::Polygon_with_holes_2>::const_iterator it;
+        std::list<Polygon_with_holes_2> res;
+        std::list<Polygon_with_holes_2>::const_iterator it;
         cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
 
         polIt->polygons_with_holes (std::back_inserter (res));
 
         for (it=res.begin();it!=res.end();++it) {
             OGRLinearRing ring;
-            mwv::Polygon_2::Curve_const_iterator cIt;
+            Polygon_2::Curve_const_iterator cIt;
             //cout << "Curves: "<<it->outer_boundary().number << endl;
             for(cIt=it->outer_boundary().curves_begin(); cIt!=it->outer_boundary().curves_end();++cIt) {
 
@@ -480,7 +480,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(mwv::MWVDiagram &diagram,std::string
             //cout<<ring.getNumPoints()<<endl;
 
             //reading holes
-            typename mwv::Polygon_with_holes_2::Hole_const_iterator hit;
+            typename Polygon_with_holes_2::Hole_const_iterator hit;
             //std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
             for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
                 OGRLinearRing innerRing;

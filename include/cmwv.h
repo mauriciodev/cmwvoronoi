@@ -24,6 +24,7 @@ public:
     void getArrangement();
     void getArrangement2();
     void getDiagram(siteVector &sites, weightVector &weights, obstacleVector &obstacles, CGAL::Bbox_2 extent);
+    void getDiagram2(siteVector &sites, weightVector &weights, obstacleVector obstacles, Bbox_2 extent, MWVDiagram &dominanceAreas);
     //void ApoloniusCircle(Point_2 p1, Point_2 p2, Circle_2 &circle);
     bool visibilityLines(Point_2 p0, obstacle &ob, vector<Segment_2> &visLines,Bbox_2 extent);
     bool visibilityLines_mauricio(Point_2 p0, obstacle &ob, vector<Segment_2> &visLines, Bbox_2 extent);

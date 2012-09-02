@@ -133,3 +133,41 @@ Point_2 mwv_base::representativePoint(Arrangement_2::Halfedge_handle eit) {
     }
     return res;
 }
+
+
+Polygon_2 mwv_base::construct_polygon (const Circle_2& circle) {
+  // Subdivide the circle into two x-monotone arcs.
+  GPS_Traits_2 traits;
+  Curve_2 curve (circle);
+  std::list<CGAL::Object>  objects;
+  traits.make_x_monotone_2_object() (curve, std::back_inserter(objects));
+  CGAL_assertion (objects.size() == 2);
+
+  // Construct the polygon.
+  Polygon_2 pgn;
+  GPS_Segment_2 arc;
+  std::list<CGAL::Object>::iterator iter;
+
+  for (iter = objects.begin(); iter != objects.end(); ++iter) {
+    CGAL::assign (arc, *iter);
+    pgn.push_back (arc);
+  }
+
+  return pgn;
+}
+
+Polygon_2 mwv_base::BoxAsPolygon(const Bbox_2 & extent) {
+    Polygon_2 wholeArea;
+    Point_2 p1,p2,p3,p4;
+    p1=Point_2(extent.xmin(),extent.ymin());
+    p2=Point_2(extent.xmax(),extent.ymin());
+    p3=Point_2(extent.xmax(),extent.ymax());
+    p4=Point_2(extent.xmin(),extent.ymax());
+
+
+    wholeArea.push_back(GPS_Segment_2(p1,p2));
+    wholeArea.push_back(GPS_Segment_2(p2,p3));
+    wholeArea.push_back(GPS_Segment_2(p3,p4));
+    wholeArea.push_back(GPS_Segment_2(p4,p1));
+    return wholeArea;
+}

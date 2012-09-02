@@ -10,7 +10,8 @@ public:
     Point_2 representativePoint(Arrangement_2::Halfedge_handle heIt);
     CGAL::Bbox_2 getBoundingBox(siteVector &sites);
     Point_2 intersectWithExtent(Point_2 p0, Point_2 p1, Bbox_2 extent);
-
+    Polygon_2 construct_polygon (const Circle_2& circle);
+    Polygon_2 BoxAsPolygon(const Bbox_2 & box);
 };
 
 #endif // MWV_BASE_H

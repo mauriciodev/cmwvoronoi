@@ -305,22 +305,21 @@ bool cmwv::isObstacleLeft(Line_2 l, Point_2 obsVertex) {
 void cmwv::getDiagram2(siteVector &sites, weightVector &weights, obstacleVector obstacles, Bbox_2 extent, MWVDiagram &dominanceAreas) {
     Polygon_2 wholeArea;
     wholeArea=BoxAsPolygon(extent);
-
     //create visibility areas
     vector<Polygon_set_2> visibleAreas;
     visibleAreas.resize(sites.size());
     for (unsigned int i=0;i<sites.size();i++) { //for each site
+        Polygon_set_2 invisibleArea;
         for (unsigned int j=0;j<obstacles.size();j++) { //for each obstacle
-            vector<Segment_2> visLines;
-            visibleAreas[i].insert(wholeArea);
-            visibilityLines(sites[i],obstacles[j],visLines,extent);
-            for (unsigned int k=0;k<visLines.size();k++) { //for each line created
-
-            }
+            Polygon_set_2 objectShadow;
+            obstacleShadowsWang(sites[i],obstacles[j],extent,objectShadow);
+            invisibleArea.join(objectShadow);
         }
+        visibleAreas[i].join(wholeArea);
+        visibleAreas[i].difference(invisibleArea);
     }
-    GeometryReader writer;
-    writer.exportMWVDiagramToGDAL(visibleAreas,"visibility.shp");
+    GeometryReader teste;
+    teste.exportMWVDiagramToGDAL(visibleAreas,"visibility");
 
     for (unsigned int i=0;i<sites.size();i++) {
         Polygon_set_2 S;
@@ -331,7 +330,7 @@ void cmwv::getDiagram2(siteVector &sites, weightVector &weights, obstacleVector 
                 //cout<<S.number_of_polygons_with_holes()<<endl;
                 Data_Curve_2 c;
                 ApoloniusCircle(sites[i],weights[i],sites[j],weights[j],c);
-                Polygon_set_2 dominance;
+                Polygon_set_2 dominance,jInvisibleArea, constrainedDominance;
                 dominance.clear();
                 if (c.is_circular()) {
                     Polygon_2 polC=construct_polygon(c.supporting_circle());
@@ -353,7 +352,12 @@ void cmwv::getDiagram2(siteVector &sites, weightVector &weights, obstacleVector 
                     cout<<"Line: " << dominance.number_of_polygons_with_holes()<<endl;
                 }
                 //cout<<S.do_intersect(dominance)<<endl;
-                S.intersection(dominance);
+                jInvisibleArea.join(wholeArea);
+                jInvisibleArea.difference(visibleAreas[j]);
+                dominance.join(jInvisibleArea);
+                constrainedDominance.join(visibleAreas[i]);
+                constrainedDominance.intersection(dominance);
+                S.intersection(constrainedDominance);
             }
         }
         dominanceAreas.push_back(S);
@@ -363,8 +367,31 @@ void cmwv::getDiagram2(siteVector &sites, weightVector &weights, obstacleVector 
 
     //GeometryReader teste;
     //teste.exportArrangementToGDAL(arrangement, "teste-arr");
-    //teste.exportArrangementFacesToGDAL(arrangement, "teste-arr-pol",extent);
+    teste.exportMWVDiagramToGDAL(dominanceAreas,"cmwv");
     //teste.exportPointsToGDAL(sites,"sites");
+}
 
 
+void cmwv::obstacleShadowsWang(Point_2 &s, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows ) {
+    //Polygon_set_2 wholeArea=BoxAsPolygon(extent);
+    for (unsigned int k=0;k<obstacle.size()-1;k++) { //for each pair of lines created
+        //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
+        //create a polygon to represent the shadow of that pair
+        if (obstacle[k]!=obstacle[k+1]) {
+
+            Polygon_2 shadow;
+            Point_2 p1extent=intersectWithExtent(s, obstacle[k], extent);
+            Point_2 p2extent=intersectWithExtent(s, obstacle[k+1], extent);
+            shadow.push_back(GPS_Segment_2(obstacle[k],obstacle[k+1]));
+            shadow.push_back(GPS_Segment_2(obstacle[k+1], p2extent));
+            shadow.push_back(GPS_Segment_2(p2extent, p1extent));
+            shadow.push_back(GPS_Segment_2(p1extent, obstacle[k]));
+            if (shadow.orientation()==-1) {
+                shadow.reverse_orientation();
+            }
+            //complete the shadow with the bounding box vertex
+            //cout<< shadow<<endl;
+            shadows.join(shadow);
+        }
+    }
 }

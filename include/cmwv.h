@@ -34,6 +34,8 @@ private:
 
 
 private:
+    void obstacleShadowsWang(Point_2 &site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
+
     bool isMWVoronoiSegment(Arrangement_2::Halfedge_handle eit, Arrangement_2 &arrangement, siteVector & sites,weightVector &weights, double tol=0.001);
     bool isObstacleBefore(Arrangement_2::Halfedge_handle e, Point_2 obstaclePoint, Point_2 site);
     bool isObstacleLeft(Line_2 l, Point_2 obs);

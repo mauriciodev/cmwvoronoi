@@ -14,7 +14,9 @@ using namespace std;
 
 #include <CGAL/Random.h>
 #include <CGAL/point_generators_2.h>
-
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif 
 
 class GeometryReader
 {

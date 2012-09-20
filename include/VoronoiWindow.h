@@ -58,7 +58,7 @@ private:
     TeLayer* getLayer(const std::string& name);
     std::vector<std::string> listAttributes(TeTheme* theme);
     bool isLayerNameValid(const std::string& name);
-    bool MWDiagramAsTePolygonSet(mwv::MWVDiagram &diagram, TePolygonSet &ps);
+    bool MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps);
 private:
 
     PluginParameters* plugin_params_;

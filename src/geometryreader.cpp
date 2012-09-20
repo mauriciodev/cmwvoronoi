@@ -140,7 +140,7 @@ bool GeometryReader::exportArrangementToGDAL(Arrangement_2 &arr, std::string fil
 
 
         OGRLineString line;
-        for(uint i=0; i<x.size();i++) {
+        for(unsigned int i=0; i<x.size();i++) {
             if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) {
                 line.addPoint(x[i],y[i]);
             }
@@ -352,7 +352,7 @@ bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::strin
                 vector<double>x,y;
                 arcAsLinestring(curr->curve(),x,y);
                 double xi,yi;
-                for(uint i=0; i<x.size();i++) {
+                for(unsigned int i=0; i<x.size();i++) {
                     if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                         Point_2 contrained=constrainInside(Point_2(x[i],y[i]), extent);
                         xi=CGAL::to_double(contrained.x());
@@ -375,7 +375,7 @@ bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::strin
 
 
             OGRLineString line;
-            for(uint i=0; i<x.size();i++) {
+            for(unsigned int i=0; i<x.size();i++) {
                 if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) {
                     line.addPoint(x[i],y[i]);
                 }
@@ -465,7 +465,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
                 vector<double>x,y;
                 arcAsLinestring(*cIt,x,y);
 
-                for(uint i=0; i<x.size()-1;i++) {
+                for(unsigned int i=0; i<x.size()-1;i++) {
                     if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                         ring.addPoint(x[i],y[i]);
                     }
@@ -480,7 +480,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
             //cout<<ring.getNumPoints()<<endl;
 
             //reading holes
-            typename Polygon_with_holes_2::Hole_const_iterator hit;
+            Polygon_with_holes_2::Hole_const_iterator hit;
             //std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
             for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
                 OGRLinearRing innerRing;
@@ -488,7 +488,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
                     vector<double>x,y;
 
                     arcAsLinestring(*cIt,x,y);
-                    for(uint i=0; i<x.size()-1;i++) {
+                    for(unsigned int i=0; i<x.size()-1;i++) {
                         if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                             innerRing.addPoint(x[i],y[i]);
                         }

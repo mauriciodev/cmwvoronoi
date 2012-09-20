@@ -41,19 +41,19 @@ struct XYOrderFunctor
     }
 };
 
-bool VoronoiWindow::MWDiagramAsTePolygonSet(mwv::MWVDiagram &diagram, TePolygonSet &ps) {
-    mwv::MWVDiagram::iterator dIt;
+bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps) {
+    MWVDiagram::iterator dIt;
     int polId=0;
-    for (mwv::MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
-        std::list<mwv::Polygon_with_holes_2> res;
-        std::list<mwv::Polygon_with_holes_2>::const_iterator it;
+    for (MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
+        std::list<Polygon_with_holes_2> res;
+        std::list<Polygon_with_holes_2>::const_iterator it;
         cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
         polIt->polygons_with_holes (std::back_inserter (res));
 
         for (it=res.begin();it!=res.end();++it) {
             TePolygon pol;
             TeLinearRing ring;
-            mwv::Polygon_2::Curve_const_iterator cIt;
+            Polygon_2::Curve_const_iterator cIt;
             //cout << "Curves: "<<it->outer_boundary().number << endl;
             GeometryReader geomAux;
             //reading outer boundary
@@ -73,7 +73,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(mwv::MWVDiagram &diagram, TePolygonS
             cout<<ring.size()<<endl;
 
             //reading holes
-            typename mwv::Polygon_with_holes_2::Hole_const_iterator hit;
+            Polygon_with_holes_2::Hole_const_iterator hit;
             std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
             for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
                 TeLinearRing innerRing;
@@ -105,6 +105,11 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(mwv::MWVDiagram &diagram, TePolygonS
         polId++;
 
     }
+	if (ps.size()>0) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 VoronoiWindow::VoronoiWindow(PluginParameters* pp, const enumDiagramType diagramType) : 
@@ -391,7 +396,7 @@ void VoronoiWindow::okPushButton_clicked()
         weightVector weights;
 
         mwv DiagramGenerator;
-        mwv::MWVDiagram mwdiagram;
+        MWVDiagram mwdiagram;
         pointSet.resize(numPoints);
         weights.resize(numPoints);
         for (int i=0;i<numPoints;i++ ) {

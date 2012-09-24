@@ -66,7 +66,7 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
     return true;
 }
 
-bool GeometryReader::exportArrangementToGDAL(Arrangement_2 &arr, std::string filename) {
+/*bool GeometryReader::exportArrangementToGDAL(Arrangement_2 &arr, std::string filename) {
     const char *pszDriverName = "ESRI Shapefile";
     OGRSFDriver *poDriver;
     poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(pszDriverName );
@@ -168,10 +168,10 @@ bool GeometryReader::exportArrangementToGDAL(Arrangement_2 &arr, std::string fil
     }
     OGRDataSource::DestroyDataSource( poDS );
     return 0;
-}
+}*/
 
-bool GeometryReader::arcAsLinestring(Arrangement_2::X_monotone_curve_2 curve, vector<double> &outX, vector<double> &outY, double tol) {
-    /*FIXME number of vertexes*/
+bool GeometryReader::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector<double> &outY, double tol) {
+    //FIXME number of vertexes
     if (curve.is_circular()) {
     //if (false){
 
@@ -295,7 +295,7 @@ bool GeometryReader::exportPointsToGDAL(vector<Point_2> &pointList,std::string f
     return 0;
 }
 
-bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::string filename,Bbox_2 extent) {
+/*bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::string filename,Bbox_2 extent) {
     //FIXME handle holes
     const char *pszDriverName = "ESRI Shapefile";
     OGRSFDriver *poDriver;
@@ -368,7 +368,7 @@ bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::strin
             } while (++curr != fit->outer_ccb());
         }
         pol.addRing(&ring);
-        /*for (eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
+        for (eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
 
             vector<double>x,y;
             arcAsLinestring(eit,x,y);
@@ -379,7 +379,7 @@ bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::strin
                 if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) {
                     line.addPoint(x[i],y[i]);
                 }
-            }*/
+            }
         //if (pol.>0) {
             poFeature->SetGeometry( &pol );
             if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
@@ -394,7 +394,7 @@ bool GeometryReader::exportArrangementFacesToGDAL(Arrangement_2 &arr, std::strin
     OGRDataSource::DestroyDataSource( poDS );
     CPLFree(options);
     return 0;
-}
+}*/
 
 bool GeometryReader::isInside(Point_2 p, Bbox_2 box) {
     double px,py;

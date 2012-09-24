@@ -21,21 +21,21 @@ int main(){
     cout<< "Found " << pointSet.size() << " weighted points."<<endl;
     QTime t;
     t.start();
-    /*mwv DiagramGenerator;
+    mwv DiagramGenerator;
     //
     cout<< "Generating diagram."<<endl;
-    mwv::MWVDiagram diagram;
+    MWVDiagram diagram;
     DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), diagram);
     pointReader.exportMWVDiagramToGDAL(diagram,"mwv");
     pointReader.exportPointsToGDAL(pointSet,"sites");
-    */
-    int limit=91;
+
+    /*int limit=91;
     pointSet.resize(limit);
     weights.resize(limit);
     cmwv CDiagramGenerator;
     MWVDiagram outputDiagram;
     CDiagramGenerator.getDiagram2(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),outputDiagram);
-
+    */
     cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
     //pointReader.exportMWVDiagramToGDAL(diagram,"mwv");
     return 0;

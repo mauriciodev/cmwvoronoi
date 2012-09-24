@@ -1,16 +1,17 @@
 #ifndef CWVD_DEFINITIONS_H
 #define CWVD_DEFINITIONS_H
 #include<vector>
+#include "mwv_base.h"
 
 //#include <CGAL/Gmpq.h>
 
 //typedef CGAL::Gmpq                                    Number_type;
-#include <CGAL/MP_Float.h>
-#include <CGAL/Quotient.h>
+//#include <CGAL/MP_Float.h>
+//#include <CGAL/Quotient.h>
 //#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #define myTol 0.001
 
-#include <CGAL/Cartesian.h>
+//#include <CGAL/Cartesian.h>
 #include <CGAL/Arr_circle_segment_traits_2.h>
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Arrangement_with_history_2.h>
@@ -38,18 +39,10 @@ public:
 
 //
 //typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
-typedef CGAL::Quotient<CGAL::MP_Float>                      NT;
-typedef CGAL::Cartesian<NT>                                 Kernel;
+//typedef CGAL::Quotient<CGAL::MP_Float>                      NT;
+//typedef CGAL::Cartesian<NT>                                 Kernel;
 
-//basic geometries
-typedef Kernel::Circle_2                              Circle_2;
-typedef Kernel::Line_2                                Line_2;
-typedef Kernel::Segment_2                             Segment_2;
-typedef Kernel::Vector_2                              Vector_2;
-typedef Kernel::Ray_2                                 Ray_2;
-typedef Kernel::Iso_rectangle_2                       Rectangle_2;
-typedef Kernel::Point_2                               Point_2;
-typedef CGAL::Bbox_2                                  Bbox_2;
+
 
 //Arrangement definitions
 typedef CGAL::Arr_circle_segment_traits_2<Kernel>     Segment_Traits_2;
@@ -61,20 +54,7 @@ typedef Data_Traits_2::Curve_2                        Data_Curve_2;
 typedef CGAL::Arrangement_2<Data_Traits_2>            Arrangement_2;
 typedef CGAL::Arr_naive_point_location<Arrangement_2>           Naive_pl;
 
-#include <CGAL/General_polygon_set_2.h>
-#include <CGAL/Gps_circle_segment_traits_2.h>
-typedef CGAL::Gps_circle_segment_traits_2<Kernel>                 GPS_Traits_2;
-typedef CGAL::General_polygon_set_2<GPS_Traits_2>                 Polygon_set_2;
-typedef GPS_Traits_2::General_polygon_2                           Polygon_2;
-typedef GPS_Traits_2::General_polygon_with_holes_2                Polygon_with_holes_2;
-typedef std::vector<Polygon_set_2>                                MWVDiagram;
-typedef GPS_Traits_2::X_monotone_curve_2                          GPS_Segment_2;
 
-//CMWV Definitions
-typedef std::vector<double> weightVector;
-typedef std::vector<Point_2> siteVector;
-typedef std::vector<Point_2> obstacle;
-typedef std::vector<obstacle> obstacleVector;
 
 
 #endif // CWVD_DEFINITIONS_H

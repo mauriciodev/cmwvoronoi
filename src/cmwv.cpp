@@ -137,8 +137,8 @@ void cmwv::getDiagram(siteVector &sites, weightVector &weights, obstacleVector &
 
     //cout <<"Edges:" << arr2.number_of_edges()<<endl;
     GeometryReader teste;
-    teste.exportArrangementToGDAL(arrangement, "teste-arr");
-    teste.exportArrangementFacesToGDAL(arrangement, "teste-arr-pol",extent);
+    //teste.exportArrangementToGDAL(arrangement, "teste-arr");
+    //teste.exportArrangementFacesToGDAL(arrangement, "teste-arr-pol",extent);
     teste.exportPointsToGDAL(sites,"sites");
 
     //teste.exportArrangementToGDAL(arr2, "teste-mwv");
@@ -394,4 +394,52 @@ void cmwv::obstacleShadowsWang(Point_2 &s, obstacle &obstacle, Bbox_2 extent, Po
             shadows.join(shadow);
         }
     }
+}
+
+
+Point_2 cmwv::representativePoint(Arrangement_2::Halfedge_handle eit) {
+    Vector_2 v1,v2; //middle
+    Point_2 res;
+    //cout << eit->curve().source <<", "<< eit->curve().target() <<", " << m <<endl ;
+    Vector_2 m((CGAL::to_double(eit->curve().source().x())+CGAL::to_double(eit->curve().target().x()))/2,(CGAL::to_double(eit->curve().source().y())+CGAL::to_double(eit->curve().target().y()))/2);
+    //cout<< m<<endl;
+    if (eit->curve().is_circular()) {
+        //middle arc point
+        Circle_2 c=eit->curve().supporting_circle();
+        Vector_2 vCenter(CGAL::to_double(c.center().x()),CGAL::to_double(c.center().y()));
+        double radius=sqrt(CGAL::to_double(c.squared_radius()));
+        Vector_2 u=m-vCenter;
+
+        double norm=sqrt(CGAL::to_double(u.squared_length()));
+        if (norm==0.) {
+            double y=CGAL::to_double(eit->curve().source().y())-CGAL::to_double(eit->curve().target().y());
+            double x=CGAL::to_double(eit->curve().source().x())-CGAL::to_double(eit->curve().target().x());
+            if (y==0)  {
+                u=Vector_2(0,1);
+            } else {
+                u=Vector_2(1,-x/y);
+            }
+            norm=sqrt(CGAL::to_double(u.squared_length()));
+        }
+        Vector_2 u0(CGAL::to_double(eit->curve().source().x()),CGAL::to_double(eit->curve().source().y()));
+        u0=u0-vCenter;
+        double cross=CGAL::to_double(u0.x()*u.y()-u0.y()*u.x());
+        if (cross<0) {
+            //it is clockwise, fix needed
+            u=u*(-1.);
+        }
+        Vector_2 vres=u*(1/norm)*radius+vCenter;
+        res=Point_2(vres.x(),vres.y());
+
+
+    } else {
+        res=Point_2(m.x(),m.y());
+    }
+    return res;
+}
+
+void cmwv::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Data_Curve_2 &curve, int nSites) {
+    Circle_2 c;
+    mwv_base::ApoloniusCircle(s1,w1,s2,w2,c,nSites);
+    curve =Data_Curve_2(c,edgeData(edgeData::DominanceArc));
 }

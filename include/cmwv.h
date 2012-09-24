@@ -29,16 +29,18 @@ public:
     bool visibilityLines(Point_2 p0, obstacle &ob, vector<Segment_2> &visLines,Bbox_2 extent);
     bool visibilityLines_mauricio(Point_2 p0, obstacle &ob, vector<Segment_2> &visLines, Bbox_2 extent);
     CGAL::Bbox_2 getBoundingBox(siteVector &sites,obstacleVector &obstacles);
+
 private:
     bool ProcessVisibilityLine(Arrangement_2::Halfedge_around_vertex_circulator e, siteVector &sites,obstacleVector &obstacles, bool hasHitObstacleLeft=false, bool hasHitObstacleRight=false);
 
 
 private:
     void obstacleShadowsWang(Point_2 &site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
-
+    Point_2 representativePoint(Arrangement_2::Halfedge_handle heIt);
     bool isMWVoronoiSegment(Arrangement_2::Halfedge_handle eit, Arrangement_2 &arrangement, siteVector & sites,weightVector &weights, double tol=0.001);
     bool isObstacleBefore(Arrangement_2::Halfedge_handle e, Point_2 obstaclePoint, Point_2 site);
     bool isObstacleLeft(Line_2 l, Point_2 obs);
+    void ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Data_Curve_2 &curve, int nSites=0);
     Point_2 vertexAsPoint_2(Arrangement_2::Vertex_handle p) {
         return Point_2(CGAL::to_double(p->point().x()),CGAL::to_double(p->point().y()));
     }

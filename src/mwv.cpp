@@ -52,25 +52,23 @@ void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MW
     dominanceAreas.resize(sites.size());
 
     //starting thread pool
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work work(io_service);
-    boost::thread_group threads;
+    //boost::asio::io_service io_service;
+    //boost::asio::io_service::work work(io_service);
+    //boost::thread_group threads;
     //finding number of cores
-    int my_thread_count=1;//boost::thread::hardware_concurrency();
+    //int my_thread_count=1;//boost::thread::hardware_concurrency();
     //creating threads
-    for (std::size_t i = 0; i < my_thread_count; ++i)
-       threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+    /*for (std::size_t i = 0; i < my_thread_count; ++i)
+       threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));*/
     cout<<sites.size() << " sites found."<<endl;
-    vector<int> teste;
-    teste.resize(sites.size());
-    for (int i=0;i<10;i++) {
-
-        io_service.post(boost::bind(&mwv::oneDominance, this, i, sites,weights,wholeArea, &dominanceAreas));
+    for (int i=0;i<sites.size();i++) {
+        oneDominance(i,sites,weights,wholeArea,&dominanceAreas);
+        //io_service.post(boost::bind(&mwv::oneDominance, this, i, sites,weights,wholeArea, &dominanceAreas));
     }
     //io_service.post(boost::bind(a_long_running_task, 123));
 
-    io_service.reset();
-    threads.join_all();
+    //io_service.reset();
+    //threads.join_all();
 
 
     for (unsigned int i=0;i<sites.size();i++) {

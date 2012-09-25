@@ -71,17 +71,7 @@ void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MW
     //threads.join_all();
 
 
-    for (unsigned int i=0;i<sites.size();i++) {
-    //    oneDominance(i,sites,weights,wholeArea,&dominanceAreas);
-        //cout << teste[i]<<",";
-        //cout <<dominanceAreas[i].polygons_with_holes().Size()<<endl;
-    }
     cout<<endl;
-
-    //GeometryReader teste;
-    //teste.exportArrangementToGDAL(arrangement, "teste-arr");
-    //teste.exportArrangementFacesToGDAL(arrangement, "teste-arr-pol",extent);
-    //teste.exportPointsToGDAL(sites,"sites");
 
 
 }

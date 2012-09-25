@@ -1,4 +1,4 @@
-#include "cmwv.h"
+#include "cmwv_ps.h"
 #include "geometryreader.h"
 #include "mwv.h"
 #include <iostream>
@@ -20,24 +20,27 @@ int main(){
     //pointReader.getTestPoints(pointSet,weights);
     cout<< "Found " << pointSet.size() << " weighted points."<<endl;
     QTime t;
-    t.start();
+
+    /*t.start();
     mwv DiagramGenerator;
-    //
-    cout<< "Generating diagram."<<endl;
+    cout<< "Generating Multiplicative Diagram."<<endl;
     MWVDiagram diagram;
     DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), diagram);
     pointReader.exportMWVDiagramToGDAL(diagram,"mwv");
     pointReader.exportPointsToGDAL(pointSet,"sites");
+    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;*/
 
-    /*int limit=91;
-    pointSet.resize(limit);
-    weights.resize(limit);
-    cmwv CDiagramGenerator;
-    MWVDiagram outputDiagram;
-    CDiagramGenerator.getDiagram2(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),outputDiagram);
-    */
+    //int limit=91;
+    //pointSet.resize(limit)
+    //weights.resize(limit);
+    t.restart();
+    cout<< "Generating Constrained Multiplicative Diagram."<<endl;
+    cmwv_ps CDiagramGenerator;
+    MWVDiagram cDiagram;
+    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram);
+    pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv");
     cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
-    //pointReader.exportMWVDiagramToGDAL(diagram,"mwv");
+
     return 0;
 }
 

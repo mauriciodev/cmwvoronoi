@@ -452,7 +452,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
         OGRPolygon pol;
         std::list<Polygon_with_holes_2> res;
         std::list<Polygon_with_holes_2>::const_iterator it;
-        cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
+        //cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
 
         polIt->polygons_with_holes (std::back_inserter (res));
 

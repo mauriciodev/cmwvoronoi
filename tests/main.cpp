@@ -6,9 +6,32 @@ using namespace std;
 
 #include <qdatetime.h>
 
+void testApolonius() {
+    mwv test;
+    Bbox_2 extent(-2,-2,2,2);
+
+    Polygon_set_2 result;
+    //test.ApoloniusCircle(Point_2(-1,0),2,Point_2(1,0),2,result, extent);
+    test.TwoSitesDominance(Point_2(-1,0),2,Point_2(1,0),2,result, extent);
+    //test.closePolygon(Point_2(0,0), Point_2(1,1), Point_2(-1,1),extent,result );
+    //cout<<result<<endl;
+
+}
+
+void testPolygonClosing() {
+    vector<Point_2> result;
+    Bbox_2 extent(-2,-2,2,2);
+    cmwv_ps test;
+    test.closePolygon(Point_2(0,0), Point_2(1,1), Point_2(-1,1),extent,result );
+    for (vector<Point_2>::iterator pIt=result.begin();pIt!=result.end();++pIt) {
+        cout<<(*pIt)<<endl;
+    }
+}
 
 int main(){
     //cmwv generator;
+    testApolonius();
+    //testPolygonClosing();
     GeometryReader pointReader;
     siteVector pointSet;
     weightVector weights;
@@ -37,7 +60,7 @@ int main(){
     cout<< "Generating Constrained Multiplicative Diagram."<<endl;
     cmwv_ps CDiagramGenerator;
     MWVDiagram cDiagram;
-    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram);
+    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::DePaulo);
     pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv");
     cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
 

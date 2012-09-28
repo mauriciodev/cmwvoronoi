@@ -59,11 +59,14 @@ private:
     std::vector<std::string> listAttributes(TeTheme* theme);
     bool isLayerNameValid(const std::string& name);
     bool MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps);
+    bool LinesetToObstacles(TeLineSet &ls, obstacles &obsVector);
 private:
 
     PluginParameters* plugin_params_;
     enumDiagramType diagramType;
 };
+
+
 
 #endif // __VORONOIDIAGRAM_WINDOW_H_
 

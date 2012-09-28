@@ -18,7 +18,7 @@ CGAL::Bbox_2 cmwv_ps::getBoundingBox(siteVector &sites,obstacleVector &obstacles
     return mwv_base::getBoundingBox(pointSet);
 }
 
-void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVector obstacles, Bbox_2 extent, MWVDiagram &dominanceAreas) {
+void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVector obstacles, Bbox_2 extent, MWVDiagram &dominanceAreas, VisibilityConcept concept) {
     Polygon_2 wholeArea;
     wholeArea=BoxAsPolygon(extent);
     //create visibility areas
@@ -28,8 +28,12 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
         Polygon_set_2 invisibleArea;
         for (unsigned int j=0;j<obstacles.size();j++) { //for each obstacle
             Polygon_set_2 objectShadow;
-            //obstacleShadowsWang(sites[i],obstacles[j],extent,objectShadow);
-            obstacleShadowsMauricio(sites[i],obstacles[j],extent,objectShadow);
+            if (concept==Wang) {
+                obstacleShadowsWang(sites[i],obstacles[j],extent,objectShadow);
+            }
+            if (concept==DePaulo) {
+                obstacleShadowsMauricio(sites[i],obstacles[j],extent,objectShadow);
+            }
             invisibleArea.join(objectShadow);
         }
         visibleAreas[i].join(wholeArea);
@@ -45,29 +49,8 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
         for (unsigned int j=0; j<sites.size();j++) {
             if (i!=j) {
                 //cout<<S.number_of_polygons_with_holes()<<endl;
-                Curve_2 c;
-                ApoloniusCircle(sites[i],weights[i],sites[j],weights[j],c);
                 Polygon_set_2 dominance,jInvisibleArea, constrainedDominance;
-                dominance.clear();
-                if (c.is_circular()) {
-                    Polygon_2 polC=construct_polygon(c.supporting_circle());
-                    if (weights[i]<weights[j]) {
-                        dominance.insert(polC);
-                    } else {
-                        dominance.insert(wholeArea);
-                        dominance.difference(polC);
-                    }
-                } else { //line case
-                    dominance.insert(wholeArea);
-                    Polygon_2     line; // line is a polygon defined by 2 points
-                    Point_2 p1,p2;
-                    p1=Point_2(CGAL::to_double(c.source().x()),CGAL::to_double(c.source().y()));
-                    p2=Point_2(CGAL::to_double(c.target().x()),CGAL::to_double(c.target().y()));
-
-                    line.push_back(GPS_Traits_2::X_monotone_curve_2(p1,p2));
-                    dominance.intersection(line);
-                    cout<<"Line: " << dominance.number_of_polygons_with_holes()<<endl;
-                }
+                TwoSitesDominance(sites[i],weights[i],sites[j],weights[j],dominance, extent);
                 //cout<<S.do_intersect(dominance)<<endl;
                 jInvisibleArea.join(wholeArea);
                 jInvisibleArea.difference(visibleAreas[j]);
@@ -88,20 +71,30 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
     //teste.exportPointsToGDAL(sites,"sites");
 }
 
-void cmwv_ps::obstacleShadowsWang(Point_2 &s, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows ) {
+void cmwv_ps::obstacleShadowsWang(Point_2 &s, obstacle &obstacles, Bbox_2 extent, Polygon_set_2 &shadows ) {
     //Polygon_set_2 wholeArea=BoxAsPolygon(extent);
-    for (unsigned int k=0;k<obstacle.size()-1;k++) { //for each pair of lines created
+    for (unsigned int k=0;k<obstacles.size()-1;k++) { //for each pair of lines created
         //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
         //create a polygon to represent the shadow of that pair
-        if (obstacle[k]!=obstacle[k+1]) {
+        if (obstacles[k]!=obstacles[k+1]) {
+            double alpha=angle(s,obstacles[k],obstacles[k+1]);
+            vector<Point_2> boxVertexes;
+            Point_2 minVertex,maxVertex;
+            if (alpha>0) {//k+1 is clockwise sucessor of k
+                minVertex=obstacles[k];
+                maxVertex=obstacles[k+1];
+            } else {
+                minVertex=obstacles[k+1];
+                maxVertex=obstacles[k];
+            }
+            closePolygon(s,minVertex,maxVertex,extent,boxVertexes);
 
             Polygon_2 shadow;
-            Point_2 p1extent=intersectWithExtent(s, obstacle[k], extent);
-            Point_2 p2extent=intersectWithExtent(s, obstacle[k+1], extent);
-            shadow.push_back(GPS_Segment_2(obstacle[k],obstacle[k+1]));
-            shadow.push_back(GPS_Segment_2(obstacle[k+1], p2extent));
-            shadow.push_back(GPS_Segment_2(p2extent, p1extent));
-            shadow.push_back(GPS_Segment_2(p1extent, obstacle[k]));
+            shadow.push_back(GPS_Segment_2(maxVertex,minVertex));
+            for (unsigned int i=0;i<boxVertexes.size()-1;i++) {
+                shadow.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
+            }
+
             if (shadow.orientation()==-1) {
                 shadow.reverse_orientation();
             }
@@ -116,11 +109,11 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
     //Find min and max angles and vertexes ids
     int vmaxId=0, vminId=0;
     NT currentTotal=0, currentAngle=0,newTotal=0, maxTotal=0, minTotal=0;
-    for (int i=1; i<obstacle.size();i++) {
+    for (unsigned int i=1; i<obstacle.size();i++) {
         currentAngle=angle(s, obstacle[i], obstacle[i-1]);
         newTotal=currentAngle+newTotal;
 
-        cout<<currentAngle<<" ; "<<newTotal<<" ; " <<minTotal<< " ; "<<maxTotal<<endl;
+        //cout<<currentAngle<<" ; "<<newTotal<<" ; " <<minTotal<< " ; "<<maxTotal<<endl;
         if (newTotal<=minTotal) { //this is the new min
             vminId=i;
             minTotal=newTotal;
@@ -131,13 +124,16 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
         }
 
     }
-
+    vector<Point_2> boxVertexes;
+    closePolygon(s,obstacle[vminId],obstacle[vmaxId],extent,boxVertexes);
+    //reverse the points to start from max vertex
+    reverse(boxVertexes.begin(),boxVertexes.end());
     //Polygon_set_2 wholeArea=BoxAsPolygon(extent);
     Polygon_2 shadow;
-    Point_2 p1extent=intersectWithExtent(s, obstacle[vminId], extent);
-    shadow.push_back(GPS_Segment_2(p1extent,obstacle[vminId]));
+    //Point_2 p1extent=intersectWithExtent(s, obstacle[vminId], extent);
+    //shadow.push_back(GPS_Segment_2(p1extent,obstacle[vminId]));
     int inc=(vmaxId-vminId)/abs(vmaxId-vminId);
-    for (unsigned int k=vminId;k!=vmaxId;k+=inc) { //for each pair of lines created
+    for (int k=vminId;k!=vmaxId;k+=inc) { //for each pair of lines created
         //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
 
         if (obstacle[k]!=obstacle[k+inc]) {
@@ -145,34 +141,16 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
         }
 
     }
-    Point_2 p2extent=intersectWithExtent(s, obstacle[vmaxId], extent);
-    shadow.push_back(GPS_Segment_2(obstacle[vmaxId],p2extent));
-    shadow.push_back(GPS_Segment_2(p2extent,p1extent));
-    cout<<"OBSTACULO:::"<<shadow<<endl;
+    for (unsigned int i=0;i<boxVertexes.size()-1;i++) {
+        shadow.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
+    }
+    //Point_2 p2extent=intersectWithExtent(s, obstacle[vmaxId], extent);
+    //shadow.push_back(GPS_Segment_2(obstacle[vmaxId],p2extent));
+    //shadow.push_back(GPS_Segment_2(p2extent,p1extent));
+    //cout<<"OBSTACULO:::"<<shadow<<endl;
     if (shadow.orientation()==-1) {
         shadow.reverse_orientation();
     }
     shadows.join(shadow);
 }
 
-NT cmwv_ps::angle(Point_2 p0, Point_2 p1, Point_2 p2)  {
-    /* Returns angle from -pi to pi*/
-    Vector_3 v1(p1.x()-p0.x(),p1.y()-p0.y(),0), v2(p2.x()-p0.x(),p2.y()-p0.y(),0);
-    double n1,n2;
-    n1=CGAL::to_double(v1.squared_length());
-    n2=CGAL::to_double(v2.squared_length());
-    n1=sqrt(n1);
-    n2=sqrt(n2);
-
-    double c=CGAL::to_double((v1*v2)/(n1*n2));
-    //cout<< c<<endl;
-    Vector_3 cross=CGAL::cross_product(v1,v2);
-    //cout<< cross<<endl;
-    NT alpha;
-    if(c>1) c=1;
-    if(c<-1) c=-1;
-    alpha=acos(c);
-    //cout<<alpha<<endl;
-    if (cross.z()<0) alpha=0-alpha;
-    return alpha;
-}

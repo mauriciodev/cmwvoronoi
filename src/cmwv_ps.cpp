@@ -110,7 +110,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
     int vmaxId=0, vminId=0;
     NT currentTotal=0, currentAngle=0,newTotal=0, maxTotal=0, minTotal=0;
     for (unsigned int i=1; i<obstacle.size();i++) {
-        currentAngle=angle(s, obstacle[i], obstacle[i-1]);
+        currentAngle=angle(s, obstacle[i-1], obstacle[i]);
         newTotal=currentAngle+newTotal;
 
         //cout<<currentAngle<<" ; "<<newTotal<<" ; " <<minTotal<< " ; "<<maxTotal<<endl;

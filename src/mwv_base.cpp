@@ -198,6 +198,7 @@ void mwv_base::closePolygon(Point_2 site, Point_2 minVertex, Point_2 maxVertex, 
         angles.push_back(reducedAngle(angle(site,minVertex,*pIt)));
     }
     double maxAngle=angle(site,minVertex,maxVertex);
+    maxAngle=reducedAngle(maxAngle);
     //searches for what is the counter clockwise sucessor of the minVertex
     int clockWiseSucessor=0;
     for (int i=1;i<4;i++) {

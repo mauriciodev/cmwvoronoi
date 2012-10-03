@@ -439,7 +439,7 @@ Point_2 cmwv::representativePoint(Arrangement_2::Halfedge_handle eit) {
 }
 
 void cmwv::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Data_Curve_2 &curve, int nSites) {
-    Circle_2 c;
-    mwv_base::ApoloniusCircle(s1,w1,s2,w2,c,nSites);
+    Curve_2 c;
+    mwv_base::ApoloniusCircle(s1,w1,s2,w2,c);
     curve =Data_Curve_2(c,edgeData(edgeData::DominanceArc));
 }

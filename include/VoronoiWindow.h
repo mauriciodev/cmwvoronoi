@@ -8,6 +8,7 @@
 #include <TeDataTypes.h>
 #include <stdlib.h>
 #include "mwv.h"
+#include "cmwv_ps.h"
 #include "geometryreader.h"
 
 // forward declarations
@@ -59,7 +60,7 @@ private:
     std::vector<std::string> listAttributes(TeTheme* theme);
     bool isLayerNameValid(const std::string& name);
     bool MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps);
-    bool LinesetToObstacles(TeLineSet &ls, obstacles &obsVector);
+    bool LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector);
 private:
 
     PluginParameters* plugin_params_;

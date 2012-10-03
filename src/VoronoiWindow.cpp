@@ -404,10 +404,10 @@ void VoronoiWindow::okPushButton_clicked()
         }
         
         if (useBreakLines) {
-            cmwv DiagramGenerator;
+            cmwv_ps DiagramGenerator;
             //transform terralib's lineset into CGAL's lineset
-            obstacles obstacleVector;
-            DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), obstacleVector,mwdiagram);
+            obstacleVector obstacles;
+            DiagramGenerator.getDiagram(pointSet, weights,obstacles,DiagramGenerator.getBoundingBox(pointSet,obstacles),mwdiagram, cmwv_ps::DePaulo);
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_,breakLines );
         } else {
             mwv DiagramGenerator;
@@ -760,11 +760,11 @@ bool VoronoiWindow::copyAttributes(TeLayer *diagramLayer, TeTheme *pointsTheme, 
     return result;
 }
 
-bool VoronoiWindow::LinesetToObstacles(TeLineSet &ls, obstacles &obsVector) {
+bool VoronoiWindow::LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector) {
     obsVector.reserve(ls.size());
     for (TeLineSet::iterator lineIt=ls.begin();lineIt!=ls.end();++lineIt) {
-        obsVector.push_back(vector<Point_2>);
-        for (TeLine2D::iterator coordIt=lineIt->begin(); coordIt!=lineIt.end();++coordIt) {
+        //obsVector.push_back(vector<Point_2>);
+        for (TeLine2D::iterator coordIt=lineIt->begin(); coordIt!=lineIt->end();++coordIt) {
             
         }
     }

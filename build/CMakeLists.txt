@@ -1,15 +1,19 @@
-# TerraView Voronoi cmake project.
-# (c) Paulo Renato M. Oliveira, 2011
+# TerraView CMWVoronoi cmake project.
+# (c) Mauricio Carvalho Mathias de Paulo, 2012
 # ----------------------------------------------------------------------------
+
 
 cmake_minimum_required(VERSION 2.8)
 
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}/plugins)
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}/plugins)  
 
-set (PROJ_TVPLGS_DIR "${TVPLGS_DIR}/Voronoi") # change this if terralib is somewhere else
 
-set ( PROJ_NAME "Voronoi" )
+
+
+set (PROJ_TVPLGS_DIR "${TVPLGS_DIR}/CMWVoronoi") # change this if terralib is somewhere else
+
+set ( PROJ_NAME "CMWVoronoi" )
 
 project ( ${PROJ_NAME} )
 INCLUDE( ${QT_USE_FILE} )
@@ -28,13 +32,25 @@ include_directories (
 
 find_package(CGAL REQUIRED)
 include(${CGAL_USE_FILE})
-find_package(GDAL REQUIRED)
-include_directories(${GDAL_INCLUDE_DIR})
 
-SET(CMAKE_CXX_FLAGS "-O2")
+set(BOOST_LIBS thread date_time system)
+set(Boost_USE_STATIC_LIBS        ON)
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
+find_package( Boost COMPONENTS ${BOOST_LIBS} REQUIRED )
+find_package(Threads REQUIRED)
+
+if(Boost_FOUND)
+MESSAGE( STATUS "BOOST_LIBS:         " "${BOOST_LIBS}" )
+MESSAGE( STATUS "Boost_INCLUDE_DIRS:         " "${Boost_INCLUDE_DIRS}" )
+MESSAGE( STATUS "Boost_LIBRARIES:         " "${Boost_LIBRARIES}" )
+endif()
+
+SET(CMAKE_CXX_FLAGS  "-O0 -g ")
 
 FILE ( GLOB SRCS ${PROJ_TVPLGS_DIR}/src/*.cpp )
 FILE ( GLOB HEADERS ${PROJ_TVPLGS_DIR}/include/*.h )
+SET(SRCS ${SRCS} ${PROJ_TVPLGS_DIR}/src/mwv.cpp)
 
 #Qt files
 #Requires Qt multi-threaded and QT3 support
@@ -82,6 +98,8 @@ endforeach()
 
 add_definitions ( ${QT_DEFINITIONS} -DQT_THREAD_SUPPORT -DQT3_SUPPORT)
 
-add_library ( ${PROJ_NAME} SHARED ${SRCS} ${HEADERS} ${MOC_SRCS} ${UI_HDRS} ${QT4_RCC_SRCS} ${GDAL_LIBRARY})  
+add_library ( ${PROJ_NAME} SHARED ${SRCS} ${HEADERS} ${MOC_SRCS} ${UI_HDRS} ${QT4_RCC_SRCS})  
 
 target_link_libraries ( ${PROJ_NAME} terralib terraViewCore )
+SET(BUILD_FLAGS "-g -O2")
+set_target_properties(${PROJ_NAME} PROPERTIES COMPILE_FLAGS ${BUILD_FLAGS})

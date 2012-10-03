@@ -5,14 +5,6 @@
 #include "Utils.h"
 #include "ui_UIVoronoi.h"
 
-// TerraLib
-#include <ui/qt4_help.h>
-#include <TeDatabase.h>
-#include <TeVectorRemap.h>
-#include <TeWaitCursor.h>
-#include <TeQuerier.h>
-#include <TeQuerierParams.h>
-#include <TeGeoProcessingFunctions.h>
 
 // Qt
 #include <qbuttongroup.h>
@@ -250,17 +242,24 @@ void VoronoiWindow::okPushButton_clicked()
         ui->boxComboBox->setFocus();
         return;
     }
+    //Transforms to CGAL's box:
+    Bbox_2 extent = TeBox2Bbox_2(b);
     
     //if a breakline layer was chosen, set the breakline flag to true
     bool useBreakLines=false;
     std::string breakLinesLayerName=ui->breakLinesComboBox->currentText().ascii();
-    TeLineSet breakLines;
+
+    //FIXME: choose concept
+    cmwv_ps::VisibilityConcept visConcept=cmwv_ps::DePaulo;
+
+    obstacleVector obstacles;
     if (breakLinesLayerName.compare("None") ) {
+        TeLineSet breakLines;
         useBreakLines=true;
-        
+
         getLayer(breakLinesLayerName)->getLines(breakLines);
         //QMessageBox::information(this, tr("Information"), tr("Breaklines found"));
-
+        LinesetToObstacles(breakLines,obstacles);
         QMessageBox::information(this, tr("Information"), ((Te2String(breakLines.size()))+" break lines found.").c_str());
     } 
     
@@ -273,7 +272,7 @@ void VoronoiWindow::okPushButton_clicked()
     querierParams.setParams(theme->layer());
     TeQuerier  querier(querierParams);
     querier.loadInstances();
-    //finding weight's attribute
+    //finding weighting attribute
     TeAttributeList attrList = querier.getAttrList();
     int weightAttrN=0;
     if (diagramType==MWVoronoi) {
@@ -325,68 +324,11 @@ void VoronoiWindow::okPushButton_clicked()
                 numPoints++;
             }
         }
-    //sort the vertexes for delaunay and voronoi
-    if (diagramType!=MWVoronoi) {
-        TePointSet ps;
-        for (int i=0; i<numPoints;i++){
-            ps.add(TePoint(x[i],y[i]));
-        }
-        sort(ps.begin(), ps.end(), XYOrderFunctor()); // need to compare equals points
-        x[0] = ps[0].location().x_;
-        y[0] = ps[0].location().y_;
-        numPoints=1;
-        for(unsigned int i = 1; i < ps.size(); ++i) { // for each point
-            if(TeEquals(ps[i-1], ps[i])) // Do not consider equals
-                continue;
-            // Stores on float array
-    		x[numPoints] = ps[i].location().x_;
-    		y[numPoints] = ps[i].location().y_;
-            numPoints++;
-    	}
-    }
-    
     
     // Generates the Voronoi Diagram
     TeLineSet ls;
 	float x1, y1, x2, y2;
-    VoronoiDiagramGenerator * vdg;
     //mwVoronoiDiagramGenerator *mwvdg;
-    if(this->diagramType==Voronoi) {
-        vdg= new VoronoiDiagramGenerator();
-        vdg->generateVoronoi(x, y, numPoints, b.x1_, b.x2_, b.y1_, b.y2_, 0.0);
-        vdg->resetVertexPairIterator();
-        vdg->resetDelaunayEdgesIterator();
-        while(vdg->getNextVertexPair(x1, y1, x2, y2))
-        {
-            if(x1 == x2 && y1 == y2)
-                continue;
-
-	        TeLine2D l;
-	        l.add(TeCoord2D(x1, y1));
-	        l.add(TeCoord2D(x2, y2));
-	        ls.add(l);
-        }
-    }	
-    
-    if(this->diagramType==Delaunay)
-    {
-        vdg= new VoronoiDiagramGenerator();
-        vdg->setGenerateDelaunay(true);
-        vdg->setGenerateVoronoi(false);
-        vdg->generateVoronoi(x, y, numPoints, b.x1_, b.x2_, b.y1_, b.y2_, 0.0);
-        //creates the output lineset
-        while(vdg->getNextDelaunay(x1, y1, x2, y2))
-        {
-            if(x1 == x2 && y1 == y2)
-                continue;
-
-	        TeLine2D l;
-	        l.add(TeCoord2D(x1, y1));
-	        l.add(TeCoord2D(x2, y2));
-	        ls.add(l);
-        }
-    }
-    
     
     TePolygonSet diagram;
     
@@ -406,12 +348,11 @@ void VoronoiWindow::okPushButton_clicked()
         if (useBreakLines) {
             cmwv_ps DiagramGenerator;
             //transform terralib's lineset into CGAL's lineset
-            obstacleVector obstacles;
-            DiagramGenerator.getDiagram(pointSet, weights,obstacles,DiagramGenerator.getBoundingBox(pointSet,obstacles),mwdiagram, cmwv_ps::DePaulo);
+            DiagramGenerator.getDiagram(pointSet, weights,obstacles,extent,mwdiagram, visConcept );
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_,breakLines );
         } else {
             mwv DiagramGenerator;
-            DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), mwdiagram);
+            DiagramGenerator.getDiagram(pointSet, weights,extent, mwdiagram);
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_);
         }
         
@@ -439,40 +380,6 @@ void VoronoiWindow::okPushButton_clicked()
         }
     }
 
-
-    // Adding the lines of box in order to cut the diagram
-    if (this->diagramType==Voronoi)
-    {
-        TePolygon pbox = TeMakePolygon(ls.box());
-        TeLinearRing& ring = pbox[0];
-        for(unsigned int i = 0; i < ring.size() - 1; ++i)
-        {
-            TeLine2D line;
-            line.add(TeCoord2D(ring[i]));
-            line.add(TeCoord2D(ring[i+1]));
-            ls.add(line);
-        }
-    }
-    
-    TeLineSet fixedLines;
-    
-    if (diagramType!=MWVoronoi){
-        TeBreakLines(ls, fixedLines); 
-    
-        if(ui->generateLinesCheckBox->isChecked())
-            createLayer(ui->layerLinesLineEdit->text().latin1(), db, theme->layer()->projection(), fixedLines);
-    
-        // Adds identifiers to polygonizer control...
-        for(unsigned int i = 0; i < fixedLines.size(); ++i)
-        {
-            std::string sid = Te2String(i);	
-    	    fixedLines[i].objectId(sid);
-        }
-    
-        // Gets Polygons!
-        
-        Polygonizer(fixedLines, diagram);
-    }
 
     TeLayer * diagramLayer=createLayer(ui->layerNameLineEdit->text().latin1(), db, theme->layer()->projection(), diagram);
     //if (diagramType==MWVoronoi) delete mwvdg;
@@ -763,9 +670,14 @@ bool VoronoiWindow::copyAttributes(TeLayer *diagramLayer, TeTheme *pointsTheme, 
 bool VoronoiWindow::LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector) {
     obsVector.reserve(ls.size());
     for (TeLineSet::iterator lineIt=ls.begin();lineIt!=ls.end();++lineIt) {
-        //obsVector.push_back(vector<Point_2>);
+        vector<Point_2> obs;
         for (TeLine2D::iterator coordIt=lineIt->begin(); coordIt!=lineIt->end();++coordIt) {
-            
+            obs.push_back(Point_2(coordIt->x(),coordIt->y()));
         }
+        obsVector.push_back(obs);
     }
+}
+
+Bbox_2 VoronoiWindow::TeBox2Bbox_2(TeBox boxTe) {
+    return Bbox_2(boxTe.x1(),boxTe.y1(),boxTe.x2(),boxTe.y2());
 }

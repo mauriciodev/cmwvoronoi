@@ -25,11 +25,11 @@ void VoronoiDiagramPlugin::init()
 	{
 		if(tview)
 		{
-			// Voronoi
-			showVoronoiWinAction_ = new QAction(0);
-			showVoronoiWinAction_->setMenuText(tr("Voronoi"));
-			showVoronoiWinAction_->setText(tr("Voronoi"));
-			showVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/voronoi.png")));
+            // Voronoi
+            showVoronoiWinAction_ = new QAction(0);
+            showVoronoiWinAction_->setMenuText(tr("Voronoi"));
+            showVoronoiWinAction_->setText(tr("Voronoi"));
+            showVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/voronoi.png")));
 
             // Voronoi Ponderado Multiplicativamente 
 			showMWVoronoiWinAction_ = new QAction(0);
@@ -37,11 +37,11 @@ void VoronoiDiagramPlugin::init()
 			showMWVoronoiWinAction_->setText(tr("Voronoi Ponderado Multiplicativamente"));
 			showMWVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/mwvoronoi.png")));
 
-			// Delaunay
-			showDelaunayWinAction_ = new QAction(0);
-			showDelaunayWinAction_->setMenuText(tr("Delaunay"));
-			showDelaunayWinAction_->setText(tr("Delaunay"));
-			showDelaunayWinAction_->setIcon(QIcon(QPixmap(":/images/delaunay.png")));
+            // Delaunay
+            showDelaunayWinAction_ = new QAction(0);
+            showDelaunayWinAction_->setMenuText(tr("Delaunay"));
+            showDelaunayWinAction_->setText(tr("Delaunay"));
+            showDelaunayWinAction_->setIcon(QIcon(QPixmap(":/images/delaunay.png")));
 
 			std::string mainMenuName = "TerraViewPlugins.";
 			mainMenuName += (std::string)tr("Diagrams");
@@ -50,14 +50,14 @@ void VoronoiDiagramPlugin::init()
 
 			if(mnu != 0)
 			{
-				mnu->addAction(showVoronoiWinAction_);
-				mnu->addAction(showMWVoronoiWinAction_);
-				mnu->addAction(showDelaunayWinAction_);
-			}
+                mnu->addAction(showVoronoiWinAction_);
+                mnu->addAction(showMWVoronoiWinAction_);
+                mnu->addAction(showDelaunayWinAction_);
+            }
 
-			connect(showVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showVoronoiWindow()));
-			connect(showMWVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showMWVoronoiWindow()));
-			connect(showDelaunayWinAction_, SIGNAL(activated()), this, SLOT(showDelaunayWindow()));
+            connect(showVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showVoronoiWindow()));
+            connect(showMWVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showMWVoronoiWindow()));
+            connect(showDelaunayWinAction_, SIGNAL(activated()), this, SLOT(showDelaunayWindow()));
 		}
 	}
 	catch(...)

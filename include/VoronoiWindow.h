@@ -4,8 +4,17 @@
 #include "UIVoronoi.h"
 
 // TerraLib
+#include <ui/qt4_help.h>
+#include <TeDatabase.h>
+#include <TeVectorRemap.h>
+#include <TeWaitCursor.h>
+#include <TeQuerier.h>
+#include <TeQuerierParams.h>
+#include <TeGeoProcessingFunctions.h>
 #include <PluginParameters.h>
 #include <TeDataTypes.h>
+
+
 #include <stdlib.h>
 #include "mwv.h"
 #include "cmwv_ps.h"
@@ -61,6 +70,7 @@ private:
     bool isLayerNameValid(const std::string& name);
     bool MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps);
     bool LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector);
+    Bbox_2 TeBox2Bbox_2(TeBox boxTe);
 private:
 
     PluginParameters* plugin_params_;

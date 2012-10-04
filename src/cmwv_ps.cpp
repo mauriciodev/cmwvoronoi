@@ -39,8 +39,8 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
         visibleAreas[i].join(wholeArea);
         visibleAreas[i].difference(invisibleArea);
     }
-    GeometryReader teste;
-    teste.exportMWVDiagramToGDAL(visibleAreas,"visibility");
+    //GeometryReader teste;
+    //teste.exportMWVDiagramToGDAL(visibleAreas,"visibility");
 
     for (unsigned int i=0;i<sites.size();i++) {
         Polygon_set_2 S;
@@ -67,7 +67,7 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
 
     //GeometryReader teste;
     //teste.exportArrangementToGDAL(arrangement, "teste-arr");
-    teste.exportMWVDiagramToGDAL(dominanceAreas,"cmwv");
+    //teste.exportMWVDiagramToGDAL(dominanceAreas,"cmwv");
     //teste.exportPointsToGDAL(sites,"sites");
 }
 

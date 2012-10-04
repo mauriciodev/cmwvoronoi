@@ -24,6 +24,7 @@ bool mwv::oneDominance(int i, siteVector &sites, weightVector &weights, Bbox_2 e
     cout << "Polygons "<< i<<": "<<S.number_of_polygons_with_holes() << endl;
     //    (*teste)[i]=i;
     //cout<<i<<",";
+	return (S.number_of_polygons_with_holes()>0);
 }
 
 
@@ -40,7 +41,7 @@ void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MW
     /*for (std::size_t i = 0; i < my_thread_count; ++i)
        threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));*/
     cout<<sites.size() << " sites found."<<endl;
-    for (int i=0;i<sites.size();i++) {
+    for (unsigned int i=0;i<sites.size();i++) {
         oneDominance(i,sites,weights,extent,&dominanceAreas);
         //io_service.post(boost::bind(&mwv::oneDominance, this, i, sites,weights,wholeArea, &dominanceAreas));
     }

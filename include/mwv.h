@@ -7,8 +7,8 @@
 using namespace std;
 #include <CGAL/Boolean_set_operations_2.h>
 #include <boost/thread.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
+//#include <boost/asio.hpp>
+//#include <boost/bind.hpp>
 #include <list>
 #include "mwv_base.h"
 

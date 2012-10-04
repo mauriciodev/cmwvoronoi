@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include "mwv.h"
 #include "cmwv_ps.h"
-#include "geometryreader.h"
+//#include "geometryreader.h"
 
 // forward declarations
 class TeDatabase;

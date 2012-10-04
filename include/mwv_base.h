@@ -2,6 +2,9 @@
 #define MWV_BASE_H
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef Kernel::FT                                    NT;

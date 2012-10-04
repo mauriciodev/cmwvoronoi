@@ -47,7 +47,6 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
             TeLinearRing ring;
             Polygon_2::Curve_const_iterator cIt;
             //cout << "Curves: "<<it->outer_boundary().number << endl;
-            GeometryReader geomAux;
             //reading outer boundary
             for(cIt=it->outer_boundary().curves_begin(); cIt!=it->outer_boundary().curves_end();++cIt) {
 
@@ -327,7 +326,6 @@ void VoronoiWindow::okPushButton_clicked()
     
     // Generates the Voronoi Diagram
     TeLineSet ls;
-	float x1, y1, x2, y2;
     //mwVoronoiDiagramGenerator *mwvdg;
     
     TePolygonSet diagram;
@@ -676,6 +674,7 @@ bool VoronoiWindow::LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector)
         }
         obsVector.push_back(obs);
     }
+	return (obsVector.size()>0);
 }
 
 Bbox_2 VoronoiWindow::TeBox2Bbox_2(TeBox boxTe) {

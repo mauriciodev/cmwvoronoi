@@ -76,7 +76,7 @@ void mwv_base::TwoSitesDominance(Point_2 s1, double w1, Point_2 s2, double w2, P
 
         closePolygon(s2,pMin,pMax,extent,boxVertexes);
         line.push_back(GPS_Segment_2(pMax,pMin));
-        for (int i=0;i<boxVertexes.size()-1;i++) {
+        for (int i=0;i<(boxVertexes.size()-1);i++) {
             if(boxVertexes[i]!=boxVertexes[i+1])
                 line.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
         }

@@ -3,7 +3,7 @@
 
 #include "mwv_base.h"
 using namespace std;
-#include "geometryreader.h"
+//#include "geometryreader.h"
 
 class cmwv_ps : public mwv_base {
 public:

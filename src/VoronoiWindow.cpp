@@ -36,6 +36,7 @@ struct XYOrderFunctor
 bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps) {
     MWVDiagram::iterator dIt;
     int polId=0;
+	mwv_base base;
     for (MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
         std::list<Polygon_with_holes_2> res;
         std::list<Polygon_with_holes_2>::const_iterator it;
@@ -52,7 +53,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
 
                 vector<double>x,y;
 
-                geomAux.arcAsLinestring(*cIt,x,y);
+                base.arcAsLinestring(*cIt,x,y);
                 for(uint i=0; i<x.size()-1;i++) {
                     if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                         ring.add(TeCoord2D(x[i],y[i]));
@@ -62,7 +63,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
             ring.add(*(ring.begin()));
             pol.add(ring); //if (ring.IsValid())
             cout<<ring.size()<<endl;
-
+			mwv_base base;
             //reading holes
             Polygon_with_holes_2::Hole_const_iterator hit;
             std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
@@ -71,7 +72,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
                 for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
                     vector<double>x,y;
 
-                    geomAux.arcAsLinestring(*cIt,x,y);
+                    base.arcAsLinestring(*cIt,x,y);
                     for(uint i=0; i<x.size()-1;i++) {
                         if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                             innerRing.add(TeCoord2D(x[i],y[i]));
@@ -129,7 +130,7 @@ VoronoiWindow::~VoronoiWindow()
 
 void VoronoiWindow::generateLinesCheckBox_clicked()
 {
-    ui->layerLinesButtonGroup->setEnabled(ui->generateLinesCheckBox->isChecked());
+    //ui->layerLinesButtonGroup->setEnabled(ui->generateLinesCheckBox->isChecked());
 }
 
 void VoronoiWindow::themeComboBox_activated(const QString& themeName)
@@ -176,18 +177,7 @@ void VoronoiWindow::okPushButton_clicked()
 		return;
 	}
 
-    std::string layerLinesName;
-    if(ui->generateLinesCheckBox->isChecked())
-    {
-		layerLinesName = ui->layerLinesLineEdit->text().latin1();
-        if(layerLinesName.empty())
-	    {
-		    QMessageBox::information(this, tr("Information"), tr("Please, define a name to Layer of Lines."));
-            ui->voronoiTabWidget->setCurrentPage(1);
-            ui->layerLinesLineEdit->setFocus();
-		    return;
-	    }
-    }
+
 
     if(!isLayerNameValid(layerName))
     {
@@ -196,18 +186,6 @@ void VoronoiWindow::okPushButton_clicked()
         return;
     }
 
-    if(!isLayerNameValid(layerLinesName))
-    {
-        ui->voronoiTabWidget->setCurrentPage(1);
-        ui->layerLinesLineEdit->setFocus();
-        return;
-    }
-
-    if(layerName == layerLinesName)
-    {
-        QMessageBox::information(this, tr("Information"), tr("Please, define names differents to Layer result and Layer of Lines."));
-	    return;
-    }
 
 	TeDatabase* db = plugin_params_->getCurrentDatabasePtr();
     TeTheme* theme = getTheme(ui->themeComboBox->currentText().latin1());

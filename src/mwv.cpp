@@ -27,31 +27,38 @@ bool mwv::oneDominance(int i, siteVector &sites, weightVector &weights, Bbox_2 e
 	return (S.number_of_polygons_with_holes()>0);
 }
 
+void mwv::processSites(int startId, int endId,siteVector &sites, weightVector &weights, Bbox_2 extent, MWVDiagram &dominanceAreas) {
+	for (int i=startId;i<endId;i++) {
+		oneDominance(i,sites,weights,extent,&dominanceAreas);
+    }
+}
 
 void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MWVDiagram &dominanceAreas) {
     dominanceAreas.resize(sites.size());
-
+	processSites(0,sites.size(),sites,weights,extent,dominanceAreas);
     //starting thread pool
     //boost::asio::io_service io_service;
     //boost::asio::io_service::work work(io_service);
     //boost::thread_group threads;
     //finding number of cores
-    //int my_thread_count=1;//boost::thread::hardware_concurrency();
+    int my_thread_count=1;//boost::thread::hardware_concurrency();
     //creating threads
-    /*for (std::size_t i = 0; i < my_thread_count; ++i)
-       threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));*/
+	/*vector<MWVDiagram> threadResults;
+	threadResults.resize(my_thread_count);
+	vector<boost::thread> threads;
+	for (int i=0;i<my_thread_count;i++) {
+		int startId,endId, sitesPerGroup;
+		sitesPerGroup=sites.size() / my_thread_count +1;
+		startId=sitesPerGroup*i;
+		endId=sitesPerGroup*(i+1)-1;
+		threads.push_back(boost::thread(&mwv::processSites,startId,endId,sites,weights,extent,threadResults[i]));
+	}
     cout<<sites.size() << " sites found."<<endl;
-    for (unsigned int i=0;i<sites.size();i++) {
-        oneDominance(i,sites,weights,extent,&dominanceAreas);
-        //io_service.post(boost::bind(&mwv::oneDominance, this, i, sites,weights,wholeArea, &dominanceAreas));
-    }
-    //io_service.post(boost::bind(a_long_running_task, 123));
-
-    //io_service.reset();
-    //threads.join_all();
 
 
-    cout<<endl;
+	for (unsigned int i=0;i<my_thread_count;i++) {
+		dominanceAreas.insert(
+    cout<<endl;*/
 
 
 }

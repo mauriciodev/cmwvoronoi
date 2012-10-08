@@ -38,21 +38,21 @@ int main(){
     obstacleVector obstacles;
 
     //pointReader.getRandomPoints(npoints,pointSet, weights);
-    pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
-    pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
+    pointReader.getPointsFromGDAL("C:/dados/INTCIR10.shp","frequencia",pointSet,weights);
+    //pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
     //pointReader.getTestPoints(pointSet,weights);
     cout<< "Found " << pointSet.size() << " weighted points."<<endl;
     QTime t;
 
-    /*t.start();
+    t.start();
     mwv DiagramGenerator;
     cout<< "Generating Multiplicative Diagram."<<endl;
     MWVDiagram diagram;
     DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), diagram);
     pointReader.exportMWVDiagramToGDAL(diagram,"mwv");
     pointReader.exportPointsToGDAL(pointSet,"sites");
-    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;*/
-
+    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
+	/*
     //int limit=91;
     //pointSet.resize(limit)
     //weights.resize(limit);
@@ -62,7 +62,7 @@ int main(){
     MWVDiagram cDiagram;
     CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::DePaulo);
     pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv");
-    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
+    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;*/
 
     return 0;
 }

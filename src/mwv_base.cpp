@@ -76,7 +76,7 @@ void mwv_base::TwoSitesDominance(Point_2 s1, double w1, Point_2 s2, double w2, P
 
         closePolygon(s2,pMin,pMax,extent,boxVertexes);
         line.push_back(GPS_Segment_2(pMax,pMin));
-        for (int i=0;i<(boxVertexes.size()-1);i++) {
+        for (unsigned int i=0;i<(boxVertexes.size()-1);i++) {
             if(boxVertexes[i]!=boxVertexes[i+1])
                 line.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
         }
@@ -247,3 +247,77 @@ double mwv_base::reducedAngle(double angle) {
     }
 }
 
+bool mwv_base::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector<double> &outY, double tol) {
+    //FIXME number of vertexes
+    if (curve.is_circular()) {
+    //if (false){
+
+        double r=CGAL::sqrt(CGAL::to_double(curve.supporting_circle().squared_radius()));
+        double cx=CGAL::to_double(curve.supporting_circle().center().x());
+        double cy=CGAL::to_double(curve.supporting_circle().center().y());
+        double steps=10;
+        Point_2 center=Point_2(cx,cy);
+        double ang;
+        Point_2 p1=Point_2(CGAL::to_double(curve.source().x()),CGAL::to_double(curve.source().y()));
+        Point_2 p2=Point_2(CGAL::to_double(curve.target().x()),CGAL::to_double(curve.target().y()));
+        double ang0=angle(center,Point_2(cx+1,cy),p1);
+        if (curve.orientation()==CGAL::CLOCKWISE) {
+            Point_2 pAux=p2;
+            p2=p1;
+            p1=pAux;
+        }	
+
+        ang=angle(center,p1,p2);
+        if (curve.orientation()==CGAL::CLOCKWISE) ang*=-1.;
+
+
+
+        double angStep,xi=0,yi=0;
+        for (int i=0; i<steps+1; i++) {
+            angStep=ang0+ang/(steps)*i;
+            xi=cx+r*cos(angStep);
+            yi=cy+r*sin(angStep);
+            outX.push_back(xi);
+            outY.push_back(yi);
+        }
+    } else {
+        outX.push_back(CGAL::to_double(curve.source().x()));
+        outY.push_back(CGAL::to_double(curve.source().y()));
+        outX.push_back(CGAL::to_double(curve.target().x()));
+        outY.push_back(CGAL::to_double(curve.target().y()));
+    }
+    return true;
+
+
+}
+
+
+double mwv_base::measureAngle(Point_2 p1, Point_2 p0, Point_2 p2) {
+
+        double x1=CGAL::to_double(p1.x());
+        double x2=CGAL::to_double(p2.x());
+        double y1=CGAL::to_double(p1.y());
+        double y2=CGAL::to_double(p2.y());
+        double cx=CGAL::to_double(p0.x());
+        double cy=CGAL::to_double(p0.y());
+        Vector_2 u1(x1-cx,y1-cy),u2(x2-cx,y2-cy);
+
+        double scalar=CGAL::to_double(u1*u2);
+        double norm1=sqrt(CGAL::to_double(u1*u1));
+        double norm2=sqrt(CGAL::to_double(u2*u2));
+        double cosTheta=scalar/norm1/norm2;
+        double cross=CGAL::to_double(u1.x()*u2.y()-u1.y()*u2.x());
+        double sinTheta=cross/norm1/norm2;
+        double angle;
+        if (cosTheta< -1.) {
+            angle=M_PI;
+        } else if (cosTheta>1. ) {
+            angle=0;
+        } else {
+            angle=acos(cosTheta);
+            if (sinTheta<0) {
+                angle=2*M_PI-angle;
+            }
+        }
+        return angle;
+}

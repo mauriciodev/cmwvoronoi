@@ -22,6 +22,7 @@ public:
     void getDiagram(siteVector &sites, weightVector &weights, CGAL::Bbox_2 extent, MWVDiagram &dominanceAreas);
     bool getDiagram2(siteVector &sites, weightVector &weights, CGAL::Bbox_2 extent);
     bool oneDominance(int i, siteVector &sites, weightVector &weights, Bbox_2 extent, MWVDiagram *dominanceAreas);//
+	void processSites(int startId, int endIt,siteVector &sites, weightVector &weights, Bbox_2 extent, MWVDiagram &dominanceAreas);
     //void ApoloniusCircle(Point_2 s1, NT w1, Point_2 s2, NT w2, Curve_2 &curve);
 
     //PROPERTIES

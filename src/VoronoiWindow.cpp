@@ -226,18 +226,34 @@ void VoronoiWindow::okPushButton_clicked()
     bool useBreakLines=false;
     std::string breakLinesLayerName=ui->breakLinesComboBox->currentText().ascii();
 
-    //FIXME: choose concept
-    cmwv_ps::VisibilityConcept visConcept=cmwv_ps::DePaulo;
+    //choose visibility concept
+	cmwv_ps::VisibilityConcept visConcept;
+	if (ui->visibilityConceptComboBox->currentText()=="Paulo, 2012") {
+		visConcept=cmwv_ps::DePaulo;
+	} else { //default
+		visConcept=cmwv_ps::Wang;
+	}
+    
 
     obstacleVector obstacles;
     if (breakLinesLayerName.compare("None") ) {
-        TeLineSet breakLines;
-        useBreakLines=true;
-
-        getLayer(breakLinesLayerName)->getLines(breakLines);
-        //QMessageBox::information(this, tr("Information"), tr("Breaklines found"));
-        LinesetToObstacles(breakLines,obstacles);
-        QMessageBox::information(this, tr("Information"), ((Te2String(breakLines.size()))+" break lines found.").c_str());
+		TeLayer* breakLinesLayer;
+		breakLinesLayer=getLayer(breakLinesLayerName);
+		if (breakLinesLayer->geomRep() & TeLINES) {
+			TeLineSet breakLines;
+			useBreakLines=true;
+			getLayer(breakLinesLayerName)->getLines(breakLines);
+			//QMessageBox::information(this, tr("Information"), tr("Breaklines found"));
+			LinesetToObstacles(breakLines,obstacles);
+			
+		} else if (breakLinesLayer->geomRep() & TePOLYGONS) {
+			TePolygonSet breakLines;
+			useBreakLines=true;
+			getLayer(breakLinesLayerName)->getPolygons(breakLines);
+			//QMessageBox::information(this, tr("Information"), tr("Breaklines found"));
+			PolygonSetToObstacles(breakLines,obstacles);
+		}
+        QMessageBox::information(this, tr("Information"), ((Te2String(obstacles.size()))+" break lines found.").c_str());
     } 
     
     
@@ -428,10 +444,10 @@ void VoronoiWindow::showWindow()
     ui->breakLinesComboBox->clear();
     ui->breakLinesComboBox->insertItem("None");
     for(layerIt = layerMap.begin(); layerIt != layerMap.end(); ++layerIt)
-        if (layerIt->second->geomRep() & TeLINES ) 
+        if ((layerIt->second->geomRep() & TeLINES) || (layerIt->second->geomRep() & TePOLYGONS) ) 
             ui->breakLinesComboBox->insertItem(QString(layerIt->second->name().c_str()));
 
-    //filling the attributes box.
+    //filling attributes' box.
 
     this->themeComboBox_activated(ui->themeComboBox->currentText());
 	exec();
@@ -652,6 +668,20 @@ bool VoronoiWindow::LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector)
         }
         obsVector.push_back(obs);
     }
+	return (obsVector.size()>0);
+}
+
+bool VoronoiWindow::PolygonSetToObstacles(TePolygonSet &ps, obstacleVector &obsVector) {
+    //obsVector.reserve(ps.size());
+	for (TePolygonSet::iterator polIt=ps.begin();polIt!=ps.end();++polIt) {
+		for (TePolygon::iterator ringIt=polIt->begin();ringIt!=polIt->end();++ringIt) {
+			vector<Point_2> obs;
+			for (TeLinearRing::iterator coordIt=ringIt->begin(); coordIt!=ringIt->end();++coordIt) {
+				obs.push_back(Point_2(coordIt->x(),coordIt->y()));
+			}
+			obsVector.push_back(obs);
+		}
+	}
 	return (obsVector.size()>0);
 }
 

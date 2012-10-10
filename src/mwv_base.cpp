@@ -181,10 +181,14 @@ Polygon_2 mwv_base::BoxAsPolygon(const Bbox_2 & extent) {
     return wholeArea;
 }
 
-void mwv_base::closePolygon(Point_2 site, Point_2 minVertex, Point_2 maxVertex, Bbox_2 extent, vector<Point_2> &boxVertexes)    {
+bool mwv_base::closePolygon(Point_2 site, Point_2 minVertex, Point_2 maxVertex, Bbox_2 extent, vector<Point_2> &boxVertexes)    {
     /*Closes the polygon defined by a site, an obstacle and the bounding box. the obstacle is defined by maxVertex and minVertex*/
-    Point_2 pMinExtent=intersectWithExtent(site, minVertex, extent);
+	//checks if the points are inside the box
+	if (!(isPointInBox(site,extent) && isPointInBox(minVertex,extent) && isPointInBox(maxVertex,extent)) ) return false;
+	//extends the lines between the site and the vertexes
+	Point_2 pMinExtent=intersectWithExtent(site, minVertex, extent);
     Point_2 pMaxExtent=intersectWithExtent(site, maxVertex, extent);
+	//start building the polygon
     boxVertexes.push_back(minVertex);
     boxVertexes.push_back(pMinExtent);
     vector<Point_2> box;
@@ -213,6 +217,12 @@ void mwv_base::closePolygon(Point_2 site, Point_2 minVertex, Point_2 maxVertex, 
     }
     boxVertexes.push_back(pMaxExtent);
     boxVertexes.push_back(maxVertex);
+	return (boxVertexes.size()>=4);
+}
+
+double mwv_base::isPointInBox(Point_2 p, Bbox_2 box) {
+	return ((p.x()>box.xmin()) && (p.x()<box.xmax()) && (p.y()>box.ymin()) && (p.y()<box.ymax())) ;
+
 }
 
 double mwv_base::angle(Point_2 p0, Point_2 p1, Point_2 p2)  {
@@ -238,6 +248,7 @@ double mwv_base::angle(Point_2 p0, Point_2 p1, Point_2 p2)  {
 }
 
 double mwv_base::reducedAngle(double angle) {
+	/*! Returns an angle between 0 and 2*pi. */
     if (angle>2*M_PI) {
         return fmod(angle,2*M_PI);
     } else if (angle<0){

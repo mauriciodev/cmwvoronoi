@@ -46,7 +46,7 @@ public:
     mwv_base();
     void ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Curve_2 &circleOutput);
     void TwoSitesDominance(Point_2 s1, double w1, Point_2 s2, double w2, Polygon_set_2 &output, Bbox_2 extent);
-    void closePolygon(Point_2 site, Point_2 minVertex, Point_2 maxVertex, Bbox_2 extent, vector<Point_2> &boxVertexes);
+    bool closePolygon(Point_2 site, Point_2 minVertex, Point_2 maxVertex, Bbox_2 extent, vector<Point_2> &boxVertexes);
     CGAL::Bbox_2 getBoundingBox(siteVector &sites);
     Point_2 intersectWithExtent(Point_2 p0, Point_2 p1, Bbox_2 extent);
     Polygon_2 construct_polygon (const Circle_2& circle);
@@ -55,6 +55,7 @@ public:
     double angle(Point_2 p0, Point_2 p1, Point_2 p2);
 	double measureAngle(Point_2 p1, Point_2 p0, Point_2 p2);
     double reducedAngle(double angle);
+	double isPointInBox(Point_2 p, Bbox_2 box);
 };
 
 #endif // MWV_BASE_H

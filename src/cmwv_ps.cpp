@@ -89,18 +89,20 @@ void cmwv_ps::obstacleShadowsWang(Point_2 &s, obstacle &obstacles, Bbox_2 extent
             }
             closePolygon(s,minVertex,maxVertex,extent,boxVertexes);
 
-            Polygon_2 shadow;
-            shadow.push_back(GPS_Segment_2(maxVertex,minVertex));
-            for (unsigned int i=0;i<boxVertexes.size()-1;i++) {
-                shadow.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
-            }
+			if (boxVertexes.size()>0){
+				Polygon_2 shadow;
+				shadow.push_back(GPS_Segment_2(maxVertex,minVertex));
+				for (unsigned int i=0;i<boxVertexes.size()-1;i++) {
+					shadow.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
+				}
 
-            if (shadow.orientation()==-1) {
-                shadow.reverse_orientation();
-            }
-            //complete the shadow with the bounding box vertex
-            //cout<< shadow<<endl;
-            shadows.join(shadow);
+				if (shadow.orientation()==-1) {
+					shadow.reverse_orientation();
+				}
+				//complete the shadow with the bounding box vertex
+				//cout<< shadow<<endl;
+				shadows.join(shadow);
+			}
         }
     }
 }

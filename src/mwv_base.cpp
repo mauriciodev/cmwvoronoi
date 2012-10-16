@@ -62,6 +62,7 @@ void mwv_base::TwoSitesDominance(Point_2 s1, double w1, Point_2 s2, double w2, P
         p2=Point_2(CGAL::to_double(c.target().x()),CGAL::to_double(c.target().y()));
         Point_2 p1extent=intersectWithExtent(p2,p1,extent);
         Point_2 p2extent=intersectWithExtent(p1,p2,extent);
+        //cout<< p1<<", "<<p1extent<<", "<<p2<<", "<<p2extent<<endl;
         vector<Point_2> boxVertexes;
         //closes the polygon looking from s2 to s1 as if the segment was a breakline
         double alpha=angle(s2,p1extent,p2extent);
@@ -75,12 +76,14 @@ void mwv_base::TwoSitesDominance(Point_2 s1, double w1, Point_2 s2, double w2, P
         }
 
         closePolygon(s2,pMin,pMax,extent,boxVertexes);
-        line.push_back(GPS_Segment_2(pMax,pMin));
-        for (unsigned int i=0;i<(boxVertexes.size()-1);i++) {
-            if(boxVertexes[i]!=boxVertexes[i+1])
-                line.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
+        if (boxVertexes.size()>0) {
+            line.push_back(GPS_Segment_2(pMax,pMin));
+            for (unsigned int i=0;i<(boxVertexes.size()-1);i++) {
+                if(boxVertexes[i]!=boxVertexes[i+1])
+                    line.push_back(GPS_Segment_2(boxVertexes[i],boxVertexes[i+1]));
+            }
+            dominance.insert(line);
         }
-        dominance.insert(line);
         //cout<<"Line: " << dominance.number_of_polygons_with_holes()<<endl;
     }
 }
@@ -98,11 +101,16 @@ void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Cur
         double my=CGAL::to_double((s1y+s2y)/2);
         double dx=CGAL::to_double(s1x-s2x);
         double dy=CGAL::to_double(s1y-s2y);
-        double m=atan(-1.*dx/dy);
-
-        double d=100*(dx*dx+dy*dy);
-
-        Point_2 p1(-d*cos(m)+mx,-d*sin(m)+my),p2(d*cos(m)+mx,d*sin(m)+my);
+        Point_2 p1,p2;
+        double d=(dx*dx+dy*dy)/1000.;
+        if (dy!=0) {
+            double m=atan(-1.*dx/dy);
+            p1=Point_2(-d*cos(m)+mx,-d*sin(m)+my);
+            p2=Point_2(d*cos(m)+mx,d*sin(m)+my);
+        } else {
+            p1=Point_2(mx,-d+my);
+            p2=Point_2(mx,d+my);
+        }
         curve=Segment_2(p1,p2);
         //w1=w2*1.001;
     //}
@@ -221,7 +229,9 @@ bool mwv_base::closePolygon(Point_2 site, Point_2 minVertex, Point_2 maxVertex, 
 }
 
 double mwv_base::isPointInBox(Point_2 p, Bbox_2 box) {
-	return ((p.x()>box.xmin()) && (p.x()<box.xmax()) && (p.y()>box.ymin()) && (p.y()<box.ymax())) ;
+    bool xTest=(p.x()>=box.xmin()) && (p.x()<=box.xmax());
+    bool yTest=(p.y()>=box.ymin()) && (p.y()<=box.ymax());
+    return (xTest && yTest);
 
 }
 

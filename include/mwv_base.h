@@ -39,6 +39,10 @@ typedef std::vector<Point_2> siteVector;
 typedef std::vector<Point_2> obstacle;
 typedef std::vector<obstacle> obstacleVector;
 
+//multi thread
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+
 
 class mwv_base
 {
@@ -56,6 +60,9 @@ public:
 	double measureAngle(Point_2 p1, Point_2 p0, Point_2 p2);
     double reducedAngle(double angle);
 	double isPointInBox(Point_2 p, Bbox_2 box);
+
+    MWVDiagram _diagram; //lockable diagram
+    boost::mutex _mutex; //mutex to lock it
 };
 
 #endif // MWV_BASE_H

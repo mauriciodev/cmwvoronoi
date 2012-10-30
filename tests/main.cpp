@@ -28,24 +28,10 @@ void testPolygonClosing() {
     }
 }
 
-int main(){
-    //cmwv generator;
-    testApolonius();
-    //testPolygonClosing();
+void testMWV(siteVector &pointSet, weightVector &weights, obstacleVector &obstacles) {
     GeometryReader pointReader;
-    siteVector pointSet;
-    weightVector weights;
-    obstacleVector obstacles;
-
-    //pointReader.getRandomPoints(npoints,pointSet, weights);
-    //pointReader.getPointsFromGDAL("C:/dados/INTCIR10.shp","frequencia",pointSet,weights);
-    pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
-    pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
-    //pointReader.getTestPoints(pointSet,weights);
     cout<< "Found " << pointSet.size() << " weighted points."<<endl;
     QTime t;
-
-
     mwv DiagramGenerator;
     cout<< "Generating Multiplicative Diagram."<<endl;
     MWVDiagram diagram;
@@ -59,17 +45,52 @@ int main(){
     pointReader.exportMWVDiagramToGDAL(diagram,"mwv");
     pointReader.exportPointsToGDAL(pointSet,"sites");
 
-	/*
-    //int limit=91;
-    //pointSet.resize(limit)
-    //weights.resize(limit);
+}
+void testCMWV(siteVector &pointSet, weightVector &weights, obstacleVector &obstacles) {
+    GeometryReader pointReader;
+    QTime t;
     t.restart();
     cout<< "Generating Constrained Multiplicative Diagram."<<endl;
     cmwv_ps CDiagramGenerator;
     MWVDiagram cDiagram;
-    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::DePaulo);
+    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::DePaulo,1);
     pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv");
-    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;*/
+    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
+    //CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::Wang);
+    //GeometryReader teste;
+    //teste.exportArrangementToGDAL(arrangement, "teste-arr");
+    //teste.exportMWVDiagramToGDAL(dominanceAreas,"cmwv");
+    //teste.exportPointsToGDAL(sites,"sites");
+}
+
+int main(){
+    //cmwv generator;
+    cout << -11 % 10<<endl;
+    testApolonius();
+    //testPolygonClosing();
+    GeometryReader pointReader;
+    siteVector pointSet;
+    weightVector weights;
+    obstacleVector obstacles;
+
+    //pointReader.getRandomPoints(npoints,pointSet, weights);
+    //pointReader.getPointsFromGDAL("C:/dados/INTCIR10.shp","frequencia",pointSet,weights);
+    //string c="/media/7C340CAA340C6A0A/";
+    pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/point_sample.shp","frequencia",pointSet,weights);
+    //pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin.shp",obstacles);
+    //pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
+    pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
+    //pointReader.getTestPoints(pointSet,weights);
+    //testMWV(pointSet,weights,obstacles);
+    testCMWV(pointSet,weights,obstacles);
+
+
+
+
+    //int limit=91;
+    //pointSet.resize(limit)
+    //weights.resize(limit);
+
 
     return 0;
 }

@@ -30,13 +30,14 @@ bool mwv::oneDominance(int i, siteVector &sites, weightVector &weights, Bbox_2 e
 }
 
 void mwv::processSites(int startId, int endId,siteVector &sites, weightVector &weights, Bbox_2 extent) {
-    for (int i=startId;i<endId;i++) {
+    for (int i=startId;(i<endId+1) && (i<sites.size());i++) {
         oneDominance(i,sites,weights,extent);
     }
 }
 
 void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MWVDiagram &dominanceAreas, int numberOfThreads) {
     cout<<sites.size() << " sites found."<<endl;
+    this->_diagram.clear();
     _diagram.resize(sites.size());
     //processSites(0,sites.size(),sites,weights,extent,dominanceAreas);
     //starting thread pool

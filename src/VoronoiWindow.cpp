@@ -443,10 +443,12 @@ void VoronoiWindow::showWindow()
     //break lines layer
     ui->breakLinesComboBox->clear();
     ui->breakLinesComboBox->insertItem("None");
-    for(layerIt = layerMap.begin(); layerIt != layerMap.end(); ++layerIt)
+
+	TeLayerMap& layerMap2 = plugin_params_->getCurrentDatabasePtr()->layerMap();
+    for(layerIt = layerMap2.begin(); layerIt != layerMap2.end(); ++layerIt) {
         if ((layerIt->second->geomRep() & TeLINES) || (layerIt->second->geomRep() & TePOLYGONS) ) 
             ui->breakLinesComboBox->insertItem(QString(layerIt->second->name().c_str()));
-
+	}
     //filling attributes' box.
 
     this->themeComboBox_activated(ui->themeComboBox->currentText());

@@ -48,8 +48,8 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
     }
     threads.join_all();
     //processShadows(0, sites.size(), sites, weights, obstacles, extent, concept);
-    GeometryReader teste;
-    teste.exportMWVDiagramToGDAL(this->_visibleAreas,"visibility");
+    //GeometryReader teste;
+    //teste.exportMWVDiagramToGDAL(this->_visibleAreas,"visibility");
     cout<< "Creating dominance areas"<<endl;
     //processing dominance areas
     this->_diagram.clear();

@@ -340,11 +340,11 @@ void VoronoiWindow::okPushButton_clicked()
         if (useBreakLines) {
             cmwv_ps DiagramGenerator;
             //transform terralib's lineset into CGAL's lineset
-            DiagramGenerator.getDiagram(pointSet, weights,obstacles,extent,mwdiagram, visConcept );
+            DiagramGenerator.getDiagram(pointSet, weights,obstacles,extent,mwdiagram, visConcept,1 );
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_,breakLines );
         } else {
             mwv DiagramGenerator;
-            DiagramGenerator.getDiagram(pointSet, weights,extent, mwdiagram);
+            DiagramGenerator.getDiagram(pointSet, weights,extent, mwdiagram,1);
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_);
         }
         

@@ -455,7 +455,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
         //cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
 
         polIt->polygons_with_holes (std::back_inserter (res));
-
+        mwv_base mwvHelper;
         for (it=res.begin();it!=res.end();++it) {
             OGRLinearRing ring;
             Polygon_2::Curve_const_iterator cIt;
@@ -463,7 +463,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
             for(cIt=it->outer_boundary().curves_begin(); cIt!=it->outer_boundary().curves_end();++cIt) {
 
                 vector<double>x,y;
-                arcAsLinestring(*cIt,x,y);
+                mwvHelper.arcAsLinestring(*cIt,x,y);
 
                 for(unsigned int i=0; i<x.size()-1;i++) {
                     if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan

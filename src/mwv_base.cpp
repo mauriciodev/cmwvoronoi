@@ -276,24 +276,23 @@ bool mwv_base::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector
         double r=CGAL::sqrt(CGAL::to_double(curve.supporting_circle().squared_radius()));
         double cx=CGAL::to_double(curve.supporting_circle().center().x());
         double cy=CGAL::to_double(curve.supporting_circle().center().y());
-        double steps=10;
+
         Point_2 center=Point_2(cx,cy);
-        double ang;
+
         Point_2 p1=Point_2(CGAL::to_double(curve.source().x()),CGAL::to_double(curve.source().y()));
         Point_2 p2=Point_2(CGAL::to_double(curve.target().x()),CGAL::to_double(curve.target().y()));
-        double ang0=angle(center,Point_2(cx+1,cy),p1);
+
         if (curve.orientation()==CGAL::CLOCKWISE) {
             Point_2 pAux=p2;
             p2=p1;
             p1=pAux;
         }	
+        double ang0=angle(center,Point_2(cx+1,cy),p1);
+        double ang=angle(center,p1,p2);
 
-        ang=angle(center,p1,p2);
-        if (curve.orientation()==CGAL::CLOCKWISE) ang*=-1.;
-
-
-
-        double angStep,xi=0,yi=0;
+        double maxTheta=2*acos(1-tol/r);
+        int steps=ceil(ang/maxTheta);
+        double angStep=0,xi=0,yi=0;
         for (int i=0; i<steps+1; i++) {
             angStep=ang0+ang/(steps)*i;
             xi=cx+r*cos(angStep);
@@ -301,6 +300,12 @@ bool mwv_base::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector
             outX.push_back(xi);
             outY.push_back(yi);
         }
+        if (curve.orientation()==CGAL::CLOCKWISE) {
+            //ang*=-1.;
+            reverse(outX.begin(),outX.end());
+            reverse(outY.begin(),outY.end());
+        }
+
     } else {
         outX.push_back(CGAL::to_double(curve.source().x()));
         outY.push_back(CGAL::to_double(curve.source().y()));

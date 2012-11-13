@@ -55,7 +55,7 @@ public:
     Point_2 intersectWithExtent(Point_2 p0, Point_2 p1, Bbox_2 extent);
     Polygon_2 construct_polygon (const Circle_2& circle);
     Polygon_2 BoxAsPolygon(const Bbox_2 & box);
-	bool arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector<double> &outY, double tol=0.1);
+    bool arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector<double> &outY, double tol=50);
     double angle(Point_2 p0, Point_2 p1, Point_2 p2);
 	double measureAngle(Point_2 p1, Point_2 p0, Point_2 p2);
     double reducedAngle(double angle);

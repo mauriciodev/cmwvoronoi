@@ -90,8 +90,9 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
             string objectId;
             stringstream ss;
             ss<<polId;
+            ss>>objectId;
             pol.geomId(polId);
-            pol.objectId(ss.str());
+            pol.objectId(objectId);
             ps.add(pol);
         }
         polId++;
@@ -519,33 +520,37 @@ bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProje
     
 TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps)
 {
-	TeLayer* layer = createLayer(name, db, proj, TePOLYGONS);
-	if(layer == 0)
-		return false;
+    TeLayer* layer = createLayer(name, db, proj, TePOLYGONS);
+    if(layer == 0)
+        return NULL;
 
-	TeFeatureSet fs;
-	TeTable& attrTable = layer->attrTables()[0];
-    std::string lastSid=ps[0].objectId();
-	for(unsigned int i = 0; i < ps.size(); ++i)
-	{
-		std::string sid = Te2String(i);	
-		ps[i].objectId(sid);
-		TeTableRow row;
-		row.push_back(sid);
+    TeTable& attrTable = layer->attrTables()[0];
+    std::string sid; //= Te2String(i);
+    for(unsigned int i = 0; i < ps.size(); ++i)
+    {
+        if (sid=="") sid=Te2String(i); //in case there is no id, create one.
+        if (sid!=ps[i].objectId()) { //in case the id is equal to the last one, it's a multipolygon
+            sid=ps[i].objectId();
+            TeTableRow row;
+            row.push_back(sid);
+            attrTable.add(row);
+        }
+    }
 
-		TeMultiPolygon geom(ps[i]);
+    if(!layer->saveAttributeTable(attrTable))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Error saving the new layer table."));
+        db->deleteLayer(layer->id());
+        return NULL;
+    }
 
-		TeFeature feature(row, geom);
-		fs.add(feature);
-	}
+    if(!layer->addPolygons(ps))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Error adding geometries to new layer."));
+        db->deleteLayer(layer->id());
+        return NULL;
+    }
 
-	if(!layer->addFeatures(fs, false))
-	{
-		QMessageBox::critical(this, tr("Error"), tr("Error adding geometries to new layer."));
-		db->deleteLayer(layer->id());
-		return false;
-	}
-    
     return layer;
 }
 

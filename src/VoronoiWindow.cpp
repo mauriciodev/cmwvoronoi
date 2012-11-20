@@ -522,7 +522,7 @@ bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProje
     
 TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps)
 {
-    TeLayer* layer = createLayer(name, db, proj, TePOLYGONS);
+    TeLayer* layer = createLayer(name, db, proj, TeMULTIPOLYGONS);
     if(layer == 0)
         return false;
 
@@ -530,6 +530,7 @@ TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, Te
     TeTable& attrTable = layer->attrTables()[0];
     std::string lastSid="";
     std::string sid;
+    TeMultiPolygon lastGeom;
     for(unsigned int i = 0; i < ps.size(); ++i)
     {
         if (ps[i].objectId()=="") {
@@ -543,9 +544,22 @@ TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, Te
 
         TeMultiPolygon geom(ps[i]);
 
-        TeFeature feature(row, geom);
+
+
         if (lastSid!=sid) {
+            TeFeature feature(row, geom);
             fs.add(feature);
+            lastGeom=geom;
+        } else {
+            int lastId=fs.size()-1;
+            lastGeom.add(ps[i]);
+            fs.remove(lastId);
+            TeFeature feature(row, lastGeom);
+            fs.add(feature);
+            //geom2=fs[lastId].getGeometry(0);
+            //fs[lastId].addGeometry(ps[1]);
+            //fs[lastId].removeGeometry(0);
+            //fs[lastId].addGeometry(lastGeom);
         }
         lastSid=sid;
 

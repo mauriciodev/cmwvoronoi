@@ -46,6 +46,8 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
         for (it=res.begin();it!=res.end();++it) {
             TePolygon pol;
             TeLinearRing ring;
+            pol.clear();
+            ring.clear();
             Polygon_2::Curve_const_iterator cIt;
             //cout << "Curves: "<<it->outer_boundary().number << endl;
             //reading outer boundary
@@ -65,7 +67,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
             cout<<ring.size()<<endl;
 			mwv_base base;
             //reading holes
-            Polygon_with_holes_2::Hole_const_iterator hit;
+            /*Polygon_with_holes_2::Hole_const_iterator hit;
             std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
             for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
                 TeLinearRing innerRing;
@@ -84,7 +86,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
                     innerRing.add(*(innerRing.begin()));
                     pol.add(innerRing);
                 }
-            }
+            }*/
             //ring.getPoint(0,&p0);
 
             string objectId;
@@ -522,33 +524,38 @@ TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, Te
 {
     TeLayer* layer = createLayer(name, db, proj, TePOLYGONS);
     if(layer == 0)
-        return NULL;
+        return false;
 
+    TeFeatureSet fs;
     TeTable& attrTable = layer->attrTables()[0];
-    std::string sid; //= Te2String(i);
+    std::string lastSid="";
+    std::string sid;
     for(unsigned int i = 0; i < ps.size(); ++i)
     {
-        if (sid=="") sid=Te2String(i); //in case there is no id, create one.
-        if (sid!=ps[i].objectId()) { //in case the id is equal to the last one, it's a multipolygon
+        if (ps[i].objectId()=="") {
+            sid = Te2String(i);
+            ps[i].objectId(sid);
+        } else {
             sid=ps[i].objectId();
-            TeTableRow row;
-            row.push_back(sid);
-            attrTable.add(row);
         }
+        TeTableRow row;
+        row.push_back(sid);
+
+        TeMultiPolygon geom(ps[i]);
+
+        TeFeature feature(row, geom);
+        if (lastSid!=sid) {
+            fs.add(feature);
+        }
+        lastSid=sid;
+
     }
 
-    if(!layer->saveAttributeTable(attrTable))
-    {
-        QMessageBox::critical(this, tr("Error"), tr("Error saving the new layer table."));
-        db->deleteLayer(layer->id());
-        return NULL;
-    }
-
-    if(!layer->addPolygons(ps))
+    if(!layer->addFeatures(fs, false))
     {
         QMessageBox::critical(this, tr("Error"), tr("Error adding geometries to new layer."));
         db->deleteLayer(layer->id());
-        return NULL;
+        return false;
     }
 
     return layer;

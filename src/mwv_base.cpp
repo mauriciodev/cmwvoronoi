@@ -289,9 +289,15 @@ bool mwv_base::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector
         }	
         double ang0=angle(center,Point_2(cx+1,cy),p1);
         double ang=angle(center,p1,p2);
-
         double maxTheta=2*acos(1-tol/r);
-        int steps=ceil(ang/maxTheta);
+        int steps;
+        if (ang==0.) {
+            steps=1;
+        } else {
+            steps=ceil(ang/maxTheta);
+        }
+        //steps=10;
+
         double angStep=0,xi=0,yi=0;
         for (int i=0; i<steps+1; i++) {
             angStep=ang0+ang/(steps)*i;
@@ -306,13 +312,18 @@ bool mwv_base::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector
             reverse(outY.begin(),outY.end());
         }
 
-    } else {
+    }
+    if ( (!curve.is_circular()) || (outX.size()==0) || (outY.size()==0)) {
         outX.push_back(CGAL::to_double(curve.source().x()));
         outY.push_back(CGAL::to_double(curve.source().y()));
         outX.push_back(CGAL::to_double(curve.target().x()));
         outY.push_back(CGAL::to_double(curve.target().y()));
     }
-    return true;
+    if ((outX.size()>0) && (outY.size()>0)) {
+        return true;
+    } else {
+        return false;
+    }
 
 
 }

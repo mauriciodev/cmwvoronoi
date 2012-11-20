@@ -170,48 +170,7 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
     return 0;
 }*/
 
-bool GeometryReader::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector<double> &outY, double tol) {
-    //FIXME number of vertexes
-    if (curve.is_circular()) {
-    //if (false){
 
-        double r=CGAL::sqrt(CGAL::to_double(curve.supporting_circle().squared_radius()));
-        double cx=CGAL::to_double(curve.supporting_circle().center().x());
-        double cy=CGAL::to_double(curve.supporting_circle().center().y());
-        double steps=10;
-        Point_2 center=Point_2(cx,cy);
-        double angle;
-        Point_2 p1=Point_2(CGAL::to_double(curve.source().x()),CGAL::to_double(curve.source().y()));
-        Point_2 p2=Point_2(CGAL::to_double(curve.target().x()),CGAL::to_double(curve.target().y()));
-        double ang0=measureAngle(Point_2(cx+1,cy),center,p1);
-        if (curve.orientation()==CGAL::CLOCKWISE) {
-            Point_2 pAux=p2;
-            p2=p1;
-            p1=pAux;
-        }
-
-        angle=measureAngle(p1,center,p2);
-        if (curve.orientation()==CGAL::CLOCKWISE) angle*=-1.;
-
-
-
-        double angStep,xi=0,yi=0;
-        for (int i=0; i<steps+1; i++) {
-            angStep=ang0+angle/(steps)*i;
-            xi=cx+r*cos(angStep);
-            yi=cy+r*sin(angStep);
-            outX.push_back(xi);
-            outY.push_back(yi);
-        }
-    } else {
-        outX.push_back(CGAL::to_double(curve.source().x()));
-        outY.push_back(CGAL::to_double(curve.source().y()));
-        outX.push_back(CGAL::to_double(curve.target().x()));
-        outY.push_back(CGAL::to_double(curve.target().y()));
-    }
-    return true;
-
-}
 
 double GeometryReader::measureAngle(Point_2 p1, Point_2 p0, Point_2 p2) {
 
@@ -478,7 +437,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
             ring.addPoint(&p0);
             pol.addRing(&ring); //if (ring.IsValid())
             //cout<<ring.getNumPoints()<<endl;
-
+            mwv_base mwvHelper;
             //reading holes
             Polygon_with_holes_2::Hole_const_iterator hit;
             //std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
@@ -487,7 +446,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
                 for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
                     vector<double>x,y;
 
-                    arcAsLinestring(*cIt,x,y);
+                    mwvHelper.arcAsLinestring(*cIt,x,y);
                     for(unsigned int i=0; i<x.size()-1;i++) {
                         if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                             innerRing.addPoint(x[i],y[i]);

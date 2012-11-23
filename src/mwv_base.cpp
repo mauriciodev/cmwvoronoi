@@ -28,7 +28,8 @@ Point_2 mwv_base::intersectWithExtent(Point_2 p0, Point_2 p1, Bbox_2 extent) {
             return iseg->target();
         } else {
             // handle the no intersection case.
-            return Point_2(0,0);
+            //FIXME This is causing a problem with terraview
+            return p1;
         }
 
 

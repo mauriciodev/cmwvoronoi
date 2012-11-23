@@ -42,7 +42,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
         std::list<Polygon_with_holes_2>::const_iterator it;
         cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
         polIt->polygons_with_holes (std::back_inserter (res));
-
+        TeMultiPolygon mpol;
         for (it=res.begin();it!=res.end();++it) {
             TePolygon pol;
             TeLinearRing ring;
@@ -67,7 +67,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
             cout<<ring.size()<<endl;
 			mwv_base base;
             //reading holes
-            /*Polygon_with_holes_2::Hole_const_iterator hit;
+            Polygon_with_holes_2::Hole_const_iterator hit;
             std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
             for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
                 TeLinearRing innerRing;
@@ -84,9 +84,10 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
                 if (it->number_of_holes()>0) {
 
                     innerRing.add(*(innerRing.begin()));
+                    reverse(innerRing.begin(),innerRing.end());
                     pol.add(innerRing);
                 }
-            }*/
+            }
             //ring.getPoint(0,&p0);
 
             string objectId;

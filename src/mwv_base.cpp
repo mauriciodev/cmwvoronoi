@@ -297,6 +297,7 @@ bool mwv_base::arcAsLinestring(GPS_Segment_2 curve, vector<double> &outX, vector
         } else {
             steps=ceil(ang/maxTheta);
         }
+        if (steps<3) steps=5;
         //steps=10;
 
         double angStep=0,xi=0,yi=0;

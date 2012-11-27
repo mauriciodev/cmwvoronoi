@@ -14,6 +14,10 @@ SPL_PLUGIN_API bool SPL_INIT_NAME_CODE( slcPluginArgs* a_pPluginArgs )
 	{
 		PluginParameters* params = ( PluginParameters* ) arg_ptrs[ 0 ];
 
+        // This is needed for windows - TeSingletons doesn't work with DLLs
+        TeProgress::setProgressInterf( params->teprogressbase_ptr_ );
+
+
 		// Checking the TerraView plugin interface compatibility
 		if( params->getVersion() == PLUGINPARAMETERS_VERSION )
 		{

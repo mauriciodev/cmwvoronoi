@@ -33,9 +33,11 @@ struct XYOrderFunctor
     }
 };
 
+
+
 bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps) {
     MWVDiagram::iterator dIt;
-    int polId=0;
+    int polId=1;
 	mwv_base base;
     for (MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
         std::list<Polygon_with_holes_2> res;
@@ -62,7 +64,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
                     }
                 }
             }
-            ring.add(*(ring.begin()));
+            ring.add(ring[0]);
             pol.add(ring); //if (ring.IsValid())
             cout<<ring.size()<<endl;
 			mwv_base base;
@@ -83,8 +85,10 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
                 }
                 if (it->number_of_holes()>0) {
 
-                    innerRing.add(*(innerRing.begin()));
-                    reverse(innerRing.begin(),innerRing.end());
+                    innerRing.add(innerRing[0]);
+                    //forcing orientation for holes.
+                    if (TeOrientation(innerRing)==TeCLOCKWISE)
+                        reverse(innerRing.begin(),innerRing.end());
                     pol.add(innerRing);
                 }
             }
@@ -288,7 +292,6 @@ void VoronoiWindow::okPushButton_clicked()
         return;
     }
 
-    TeWaitCursor wait;
 
     // Converts x,y to a float array in order to pass to VoronoiDiagramGenerator class
     float* x = new float[n];
@@ -327,6 +330,23 @@ void VoronoiWindow::okPushButton_clicked()
     //mwVoronoiDiagramGenerator *mwvdg;
     
     TePolygonSet diagram;
+    if(TeProgress::instance())
+    {
+        QString caption = tr("Import");
+        TeProgress::instance()->setCaption(caption.latin1());
+    }
+    //progress bar initialization
+    TeWaitCursor wait;
+    //ti = clock();
+    if(TeProgress::instance())  {
+        QString msg = tr("Creating diagram. Please, wait!");
+        TeProgress::instance()->setCaption("CMWVoronoi");
+        TeProgress::instance()->setMessage(msg.latin1());
+    }
+
+    TeProgress::instance()->setTotalSteps(numPoints);
+    TeProgress::instance()->setProgress(2 );
+
     
     if(this->diagramType==MWVoronoi) {
         
@@ -348,7 +368,7 @@ void VoronoiWindow::okPushButton_clicked()
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_,breakLines );
         } else {
             mwv DiagramGenerator;
-            DiagramGenerator.getDiagram(pointSet, weights,extent, mwdiagram,1);
+            DiagramGenerator.getDiagram(pointSet, weights,extent, mwdiagram);
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_);
         }
         
@@ -392,7 +412,8 @@ void VoronoiWindow::okPushButton_clicked()
     } 
 
     wait.resetWaitCursor();
-
+    if(TeProgress::instance())
+        TeProgress::instance()->reset();
     if(this->diagramType!=Delaunay)
 	    QMessageBox::information(this, tr("Information"), tr("The Voronoi Diagram was generated successfully!"));
     else
@@ -532,6 +553,7 @@ TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, Te
     std::string lastSid="";
     std::string sid;
     TeMultiPolygon lastGeom;
+    TePolygonSet oldPoly;
     for(unsigned int i = 0; i < ps.size(); ++i)
     {
         if (ps[i].objectId()=="") {
@@ -543,19 +565,24 @@ TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, Te
         TeTableRow row;
         row.push_back(sid);
 
-        TeMultiPolygon geom(ps[i]);
+
 
 
 
         if (lastSid!=sid) {
+            oldPoly.clear();
+            oldPoly.add(ps[i]);
+            TeMultiPolygon geom(oldPoly);
             TeFeature feature(row, geom);
             fs.add(feature);
-            lastGeom=geom;
+
         } else {
             int lastId=fs.size()-1;
-            lastGeom.add(ps[i]);
+            oldPoly.add(ps[i]);
+            //lastGeom.add(ps[i]);
             fs.remove(lastId);
-            TeFeature feature(row, lastGeom);
+            TeMultiPolygon geom(oldPoly);
+            TeFeature feature(row, geom);
             fs.add(feature);
             //geom2=fs[lastId].getGeometry(0);
             //fs[lastId].addGeometry(ps[1]);
@@ -710,6 +737,7 @@ bool VoronoiWindow::PolygonSetToObstacles(TePolygonSet &ps, obstacleVector &obsV
 			}
 			obsVector.push_back(obs);
 		}
+
 	}
 	return (obsVector.size()>0);
 }

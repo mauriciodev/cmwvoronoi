@@ -28,7 +28,7 @@ void testPolygonClosing() {
     }
 }
 
-void testMWV(siteVector &pointSet, weightVector &weights, obstacleVector &obstacles) {
+void testMWV(siteVector &pointSet, weightVector &weights) {
     GeometryReader pointReader;
     cout<< "Found " << pointSet.size() << " weighted points."<<endl;
     QTime t;
@@ -54,9 +54,13 @@ void testCMWV(siteVector &pointSet, weightVector &weights, obstacleVector &obsta
     cmwv_ps CDiagramGenerator;
     MWVDiagram cDiagram;
     CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::DePaulo,1);
-    pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv");
+    pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv-depaulo");
     cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
-    //CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::Wang);
+    GeometryReader teste;
+    teste.exportMWVDiagramToGDAL(CDiagramGenerator._visibleAreas,"visibility-depaulo");
+    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::Wang,1);
+    pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv-wang");
+    teste.exportMWVDiagramToGDAL(CDiagramGenerator._visibleAreas,"visibility-wang");
     //GeometryReader teste;
     //teste.exportArrangementToGDAL(arrangement, "teste-arr");
     //teste.exportMWVDiagramToGDAL(dominanceAreas,"cmwv");
@@ -77,11 +81,11 @@ int main(){
     //pointReader.getPointsFromGDAL("C:/dados/INTCIR10.shp","frequencia",pointSet,weights);
     //string c="/media/7C340CAA340C6A0A/";
     pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/point_sample.shp","frequencia",pointSet,weights);
-    //pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin.shp",obstacles);
+    pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin4.shp",obstacles);
     //pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
-    pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
+    //pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
     //pointReader.getTestPoints(pointSet,weights);
-    //testMWV(pointSet,weights,obstacles);
+    //testMWV(pointSet,weights);
     testCMWV(pointSet,weights,obstacles);
 
 

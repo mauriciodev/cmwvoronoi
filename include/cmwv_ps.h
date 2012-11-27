@@ -19,6 +19,8 @@ private:
     void processSites(int startId, int endId,siteVector sites, weightVector weights,Bbox_2 extent);
     void processShadows(int startId, int endId, siteVector &sites, weightVector &weights, obstacleVector &obstacles, Bbox_2 extent, VisibilityConcept concept);
     int circularId(int id, int size);
+    bool cleanObstaclesOutsideExtent(obstacleVector &obstacles);
+
 };
 
 #endif // CMWV_PS_H

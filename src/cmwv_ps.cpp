@@ -48,8 +48,7 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
     }
     threads.join_all();
     //processShadows(0, sites.size(), sites, weights, obstacles, extent, concept);
-    //GeometryReader teste;
-    //teste.exportMWVDiagramToGDAL(this->_visibleAreas,"visibility");
+
     cout<< "Creating dominance areas"<<endl;
     //processing dominance areas
     this->_diagram.clear();
@@ -274,4 +273,13 @@ int cmwv_ps::circularId(int id, int size) {
     if (newId<0) newId+=size;
     return newId;
 
+}
+
+bool cmwv_ps::cleanObstaclesOutsideExtent(obstacleVector &obstacles){
+
+    for (obstacleVector::iterator obsIt=obstacles.begin();obsIt!=obstacles.end();++obsIt) {
+        for (obstacle::iterator pointIt=obsIt->begin();pointIt!=obsIt->end();++pointIt) {
+            //nothing
+        }
+    }
 }

@@ -396,7 +396,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
     if (poDS->GetLayerByName(filename.c_str())) {
         poDS->DeleteLayer(0);
     }
-    poLayer = poDS->CreateLayer( filename.c_str(), NULL, wkbPolygon, NULL );
+    poLayer = poDS->CreateLayer( filename.c_str(), NULL, wkbMultiPolygon, NULL );
 
     if( poLayer == NULL ) {
         printf( "Layer creation failed.\n" );
@@ -408,14 +408,15 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
     std::cout << diagram.size() << " areas created." << std::endl;
     for (MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
         poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
-        OGRPolygon pol;
         std::list<Polygon_with_holes_2> res;
         std::list<Polygon_with_holes_2>::const_iterator it;
         //cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
 
         polIt->polygons_with_holes (std::back_inserter (res));
         mwv_base mwvHelper;
+        OGRMultiPolygon mpol;
         for (it=res.begin();it!=res.end();++it) {
+            OGRPolygon pol;
             OGRLinearRing ring;
             Polygon_2::Curve_const_iterator cIt;
             //cout << "Curves: "<<it->outer_boundary().number << endl;
@@ -459,17 +460,16 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
                 pol.addRing(&innerRing);
 
             }
-        }
-
-
-        if (pol.getBoundary()->IsValid()) {
-            poFeature->SetGeometry( &pol );
-            if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
-                printf( "Failed to create feature in shapefile.\n" );
-                exit( 1 );
+            if (pol.getBoundary()->IsValid()) {
+                mpol.addGeometry(&pol);
             }
         }
 
+        poFeature->SetGeometry( &mpol );
+        if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
+            printf( "Failed to create feature in shapefile.\n" );
+            exit( 1 );
+        }
         OGRFeature::DestroyFeature( poFeature );
 
     }

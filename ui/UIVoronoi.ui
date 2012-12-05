@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>324</width>
-    <height>335</height>
+    <height>309</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Voronoi</string>
+   <string>Constrained Weighted Voronoi</string>
   </property>
   <layout class="QGridLayout">
    <item row="0" column="0">
@@ -68,37 +68,75 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="Q3GroupBox" name="themeGroupBox">
+          <widget class="QGroupBox" name="groupBox">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="title">
             <string>Select a Theme</string>
            </property>
-           <layout class="QGridLayout">
-            <item row="0" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
              <widget class="QComboBox" name="themeComboBox"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="themeBrowse">
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Browse</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
          </item>
          <item>
-          <widget class="Q3GroupBox" name="weightGroupBox">
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="title">
             <string>Select a weighting attribute</string>
            </property>
-           <layout class="QGridLayout" name="_2">
-            <item row="0" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
              <widget class="QComboBox" name="weightComboBox"/>
             </item>
            </layout>
           </widget>
          </item>
          <item>
-          <widget class="Q3ButtonGroup" name="layerNameButtonGroup">
+          <widget class="QGroupBox" name="groupBox_3">
            <property name="title">
             <string>Choose a name to result Layer</string>
            </property>
-           <layout class="QGridLayout">
-            <item row="0" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
              <widget class="QLineEdit" name="layerNameLineEdit"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="resultBrowse">
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Browse</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -127,42 +165,68 @@
         </attribute>
         <layout class="QGridLayout">
          <item row="0" column="0">
-          <widget class="Q3ButtonGroup" name="optionsButtonGroup">
+          <widget class="QGroupBox" name="optionsButtonGroup_2">
            <property name="title">
             <string>Result</string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_2">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="Q3ButtonGroup" name="boxButtonGroup">
+             <widget class="QGroupBox" name="boxButtonGroup">
               <property name="title">
                <string>Use the box of this Layer to delimit the diagram</string>
               </property>
-              <layout class="QGridLayout">
-               <item row="0" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <item>
                 <widget class="QComboBox" name="boxComboBox"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="delimiterBrowse">
+                 <property name="maximumSize">
+                  <size>
+                   <width>50</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Browse</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
             </item>
             <item>
-             <widget class="Q3ButtonGroup" name="buttonGroup">
+             <widget class="QGroupBox" name="buttonGroup_3">
               <property name="title">
                <string>Select the layer that contains the break lines</string>
               </property>
-              <layout class="QGridLayout" name="breakGridLayout">
-               <item row="0" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
                 <widget class="QComboBox" name="breakLinesComboBox"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="breaklinesBrowse">
+                 <property name="maximumSize">
+                  <size>
+                   <width>50</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Browse</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
             </item>
             <item>
-             <widget class="Q3ButtonGroup" name="buttonGroup_2">
+             <widget class="QGroupBox" name="buttonGroup_2">
               <property name="title">
                <string>Choose the visibility concept</string>
               </property>
-              <layout class="QGridLayout" name="breakGridLayout_2">
-               <item row="0" column="0">
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
                 <widget class="QComboBox" name="visibilityConceptComboBox">
                  <item>
                   <property name="text">
@@ -192,28 +256,11 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
- <customwidgets>
-  <customwidget>
-   <class>Q3GroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>Qt3Support/Q3GroupBox</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3ButtonGroup</class>
-   <extends>Q3GroupBox</extends>
-   <header>Qt3Support/Q3ButtonGroup</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>voronoiTabWidget</tabstop>
-  <tabstop>themeComboBox</tabstop>
-  <tabstop>layerNameLineEdit</tabstop>
   <tabstop>okPushButton</tabstop>
   <tabstop>cancelPushButton</tabstop>
   <tabstop>helpPushButton</tabstop>
-  <tabstop>boxComboBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -224,8 +271,8 @@
    <slot>okPushButton_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
+     <x>228</x>
+     <y>299</y>
     </hint>
     <hint type="destinationlabel">
      <x>20</x>
@@ -240,8 +287,8 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
+     <x>273</x>
+     <y>299</y>
     </hint>
     <hint type="destinationlabel">
      <x>20</x>
@@ -256,8 +303,8 @@
    <slot>themeComboBox_activated(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
+     <x>36</x>
+     <y>80</y>
     </hint>
     <hint type="destinationlabel">
      <x>20</x>
@@ -272,8 +319,8 @@
    <slot>helpPushButton_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
+     <x>26</x>
+     <y>299</y>
     </hint>
     <hint type="destinationlabel">
      <x>20</x>
@@ -281,5 +328,76 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>themeBrowse</sender>
+   <signal>clicked()</signal>
+   <receiver>UIVoronoi</receiver>
+   <slot>themeBrowseClick()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>75</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>161</x>
+     <y>154</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>resultBrowse</sender>
+   <signal>clicked()</signal>
+   <receiver>UIVoronoi</receiver>
+   <slot>resultBrowseClick()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>205</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>161</x>
+     <y>154</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delimiterBrowse</sender>
+   <signal>clicked()</signal>
+   <receiver>UIVoronoi</receiver>
+   <slot>delimiterBrowseClick()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>271</x>
+     <y>105</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>161</x>
+     <y>154</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>breaklinesBrowse</sender>
+   <signal>clicked()</signal>
+   <receiver>UIVoronoi</receiver>
+   <slot>breaklinesBrowseClick()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>271</x>
+     <y>171</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>161</x>
+     <y>154</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>themeBrowseClick()</slot>
+  <slot>weightBrowseClick()</slot>
+  <slot>resultBrowseClick()</slot>
+  <slot>delimiterBrowseClick()</slot>
+  <slot>breaklinesBrowseClick()</slot>
+ </slots>
 </ui>

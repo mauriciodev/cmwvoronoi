@@ -16,8 +16,8 @@ public:
 private:
     void obstacleShadowsWang(Point_2 &site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
     void obstacleShadowsMauricio(Point_2 &site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
-    void processSites(int startId, int endId,siteVector sites, weightVector weights,Bbox_2 extent);
-    void processShadows(int startId, int endId, siteVector &sites, weightVector &weights, obstacleVector &obstacles, Bbox_2 extent, VisibilityConcept concept);
+    void processSites(int startId, int endId,siteVector sites, weightVector weights,Bbox_2 extent, vector<Polygon_set_2> visibleAreas);
+    void processShadows(int startId, int endId, siteVector sites, weightVector weights, obstacleVector obstacles, Bbox_2 extent, VisibilityConcept concept);
     int circularId(int id, int size);
     bool cleanObstaclesOutsideExtent(obstacleVector &obstacles);
 

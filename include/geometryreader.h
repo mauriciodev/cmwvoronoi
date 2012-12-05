@@ -37,6 +37,7 @@ public:
     double measureAngle(Point_2 p1, Point_2 p0, Point_2 p2);
     bool isInside(Point_2 p, Bbox_2 box);
     Point_2 constrainInside(Point_2 p, Bbox_2 box);
+    vector<string> listWeightAttributes(std::string filename);
 };
 
 

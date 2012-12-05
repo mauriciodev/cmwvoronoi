@@ -60,7 +60,7 @@ public:
 	double measureAngle(Point_2 p1, Point_2 p0, Point_2 p2);
     double reducedAngle(double angle);
 	double isPointInBox(Point_2 p, Bbox_2 box);
-
+    bool isPolygon(obstacle &obs);
     MWVDiagram _diagram; //lockable diagram
     boost::mutex _mutex; //mutex to lock it
 };

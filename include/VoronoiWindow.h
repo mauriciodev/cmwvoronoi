@@ -59,6 +59,7 @@ private:
     TeLayer* createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, const TeGeomRep& rep);
 
     bool createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TeLineSet& ls);
+    TeLayer * createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, vector<TeMultiPolygon>& ps);
     
     TeLayer * createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps);
     TeTheme * createTheme(std::string layername, TeDatabase *db, TeView *view);
@@ -69,6 +70,7 @@ private:
     std::vector<std::string> listAttributes(TeTheme* theme);
     bool isLayerNameValid(const std::string& name);
     bool MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps);
+    bool MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, vector<TeMultiPolygon> &mpols);
     bool LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector);
 	bool PolygonSetToObstacles(TePolygonSet &ps, obstacleVector &obsVector);
     Bbox_2 TeBox2Bbox_2(TeBox boxTe);

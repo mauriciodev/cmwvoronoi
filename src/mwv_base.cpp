@@ -147,6 +147,7 @@ CGAL::Bbox_2 mwv_base::getBoundingBox(siteVector &sites) {
     //else toly=tolx=10;
 
     //std::cout <<minx-tolx << miny-toly << maxx+tolx << maxy+toly<<std::endl;
+    toly=tolx=10000;
     return Bbox_2(minx-tolx,miny-toly,maxx+tolx,maxy+toly);
 }
 
@@ -359,4 +360,15 @@ double mwv_base::measureAngle(Point_2 p1, Point_2 p0, Point_2 p2) {
             }
         }
         return angle;
+}
+
+bool mwv_base::isPolygon(obstacle &obs) {
+    Point_2 p;
+    NT length1=CGAL::squared_distance(obs[0],obs[1]);
+    NT lengthFirstLast=CGAL::squared_distance(obs[0],obs[obs.size()-1]);
+    if (lengthFirstLast<length1/100000.) {
+        return true;
+    } else {
+        return false;
+    }
 }

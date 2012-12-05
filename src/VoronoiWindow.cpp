@@ -112,6 +112,84 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
 	}
 }
 
+bool VoronoiWindow::MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, std::vector<TeMultiPolygon> &mpols){
+    MWVDiagram::iterator dIt;
+    int polId=1;
+    mwv_base base;
+    for (MWVDiagram::iterator polIt=diagram.begin(); polIt!=diagram.end(); ++polIt) {
+        std::list<Polygon_with_holes_2> res;
+        std::list<Polygon_with_holes_2>::const_iterator it;
+        cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
+        polIt->polygons_with_holes (std::back_inserter (res));
+        TeMultiPolygon mpol;
+        for (it=res.begin();it!=res.end();++it) {
+            TePolygon pol;
+            TeLinearRing ring;
+            pol.clear();
+            ring.clear();
+            Polygon_2::Curve_const_iterator cIt;
+            //cout << "Curves: "<<it->outer_boundary().number << endl;
+            //reading outer boundary
+            for(cIt=it->outer_boundary().curves_begin(); cIt!=it->outer_boundary().curves_end();++cIt) {
+
+                vector<double>x,y;
+
+                base.arcAsLinestring(*cIt,x,y);
+                for(uint i=0; i<x.size()-1;i++) {
+                    if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                        ring.add(TeCoord2D(x[i],y[i]));
+                    }
+                }
+            }
+            ring.add(ring[0]);
+            pol.add(ring); //if (ring.IsValid())
+            cout<<ring.size()<<endl;
+            mwv_base base;
+            //reading holes
+            Polygon_with_holes_2::Hole_const_iterator hit;
+            std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
+            for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
+                TeLinearRing innerRing;
+                for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
+                    vector<double>x,y;
+
+                    base.arcAsLinestring(*cIt,x,y);
+                    for(uint i=0; i<x.size()-1;i++) {
+                        if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                            innerRing.add(TeCoord2D(x[i],y[i]));
+                        }
+                    }
+                }
+                if (it->number_of_holes()>0) {
+
+                    innerRing.add(innerRing[0]);
+                    //forcing orientation for holes.
+                    if (TeOrientation(innerRing)==TeCLOCKWISE)
+                        reverse(innerRing.begin(),innerRing.end());
+                    pol.add(innerRing);
+                }
+            }
+            mpol.add(pol);
+            //ring.getPoint(0,&p0);
+        }
+        mpols.push_back(mpol);
+        /*string objectId;
+        stringstream ss;
+        ss<<polId;
+        ss>>objectId;
+        pol.geomId(polId);
+        pol.objectId(objectId);
+        ps.add(pol);*/
+        polId++;
+
+    }
+    if (mpols.size()>0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 VoronoiWindow::VoronoiWindow(PluginParameters* pp, const enumDiagramType diagramType) : 
 UIVoronoi((QWidget*)pp->qtmain_widget_ptr_),
 plugin_params_(pp)
@@ -329,7 +407,8 @@ void VoronoiWindow::okPushButton_clicked()
     TeLineSet ls;
     //mwVoronoiDiagramGenerator *mwvdg;
     
-    TePolygonSet diagram;
+    //TePolygonSet diagram;
+    vector<TeMultiPolygon> diagram;
     if(TeProgress::instance())
     {
         QString caption = tr("Import");
@@ -347,7 +426,7 @@ void VoronoiWindow::okPushButton_clicked()
     TeProgress::instance()->setTotalSteps(numPoints);
     TeProgress::instance()->setProgress(2 );
 
-    
+    vector<TeMultiPolygon> visibility;
     if(this->diagramType==MWVoronoi) {
         
         siteVector pointSet;
@@ -365,6 +444,7 @@ void VoronoiWindow::okPushButton_clicked()
             cmwv_ps DiagramGenerator;
             //transform terralib's lineset into CGAL's lineset
             DiagramGenerator.getDiagram(pointSet, weights,obstacles,extent,mwdiagram, visConcept,1 );
+            MWDiagramAsTeMultiPolygons(DiagramGenerator._visibleAreas,visibility);
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_,breakLines );
         } else {
             mwv DiagramGenerator;
@@ -374,8 +454,10 @@ void VoronoiWindow::okPushButton_clicked()
         
         //mwvdg->writeCSV("/home/mauricio/Projetos/mwvd/saida_terraview.csv");
         //diagram=*mwvdg->domList;
-        MWDiagramAsTePolygonSet(mwdiagram,diagram);
-        //FIXME still need to write the polygons!
+        //MWDiagramAsTePolygonSet(mwdiagram,diagram);
+
+        MWDiagramAsTeMultiPolygons(mwdiagram,diagram);
+
     }
    
     
@@ -398,6 +480,8 @@ void VoronoiWindow::okPushButton_clicked()
 
 
     TeLayer * diagramLayer=createLayer(ui->layerNameLineEdit->text().latin1(), db, theme->layer()->projection(), diagram);
+    TeLayer * visLayer=createLayer((ui->layerNameLineEdit->text()+"vis").latin1(), db, theme->layer()->projection(), visibility);
+
     //if (diagramType==MWVoronoi) delete mwvdg;
     
     if(!diagramLayer)
@@ -602,6 +686,45 @@ TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, Te
 
     return layer;
 }
+
+TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, vector<TeMultiPolygon>& ps)
+{
+    TeLayer* layer = createLayer(name, db, proj, TeMULTIPOLYGONS);
+    if(layer == 0)
+        return false;
+
+    TeFeatureSet fs;
+    TeTable& attrTable = layer->attrTables()[0];
+    std::string lastSid="";
+    std::string sid;
+    TeMultiPolygon lastGeom;
+    TePolygonSet oldPoly;
+    for(unsigned int i = 0; i < ps.size(); ++i)
+    {
+        if (ps[i].objectId()=="") {
+            sid = Te2String(i);
+            ps[i].objectId(sid);
+        } else {
+            sid=ps[i].objectId();
+        }
+        TeTableRow row;
+        row.push_back(sid);
+        TeFeature feature(row, ps[i]);
+        fs.add(feature);
+
+
+    }
+
+    if(!layer->addFeatures(fs, false))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Error adding geometries to new layer."));
+        db->deleteLayer(layer->id());
+        return false;
+    }
+
+    return layer;
+}
+
 
 TeTheme* VoronoiWindow::getTheme(const std::string& name)
 {

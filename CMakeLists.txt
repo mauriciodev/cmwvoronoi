@@ -35,14 +35,21 @@ set(LIBS ${LIBS} ${GDAL_LIBRARY})
 find_package(Qt4 REQUIRED) # find and setup Qt3 for this project
 #add_definitions(${QT_DEFINITIONS} )
 include(${QT_USE_FILE})
+SET( QT_USE_QT3SUPPORT TRUE )
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 # tell cmake where to search for Qt/KDE headers:
 
-#SET(project_UI ui/batchDialog.ui )
+SET(project_UI ui/UIVoronoi.ui)
+QT4_WRAP_UI( project_UI_HDRS ${project_UI} )
+MESSAGE( STATUS "UI header:         " "${project_UI_HDRS}" )
 
-#set(Ui_Implem include/batchcor.h)
 
-set(CMWV_HEADERS  include/geometryreader.h  include/mwv.h include/mwv_base.h include/cmwv_ps.h) #include/cmwv_definitions.h include/cmwv.h
-set(CMWV_SRCS tests/main.cpp  src/geometryreader.cpp src/mwv.cpp src/mwv_base.cpp src/cmwv_ps.cpp) #src/cmwv.cpp
+
+set(Ui_Header tests/UIVoronoi.h)
+QT4_WRAP_CPP(Ui_HEADERS_MOC ${Ui_Header})
+
+set(CMWV_HEADERS ${Ui_Header} include/geometryreader.h  include/mwv.h include/mwv_base.h include/cmwv_ps.h) #include/cmwv_definitions.h include/cmwv.h
+set(CMWV_SRCS tests/main.cpp tests/UIVoronoi.cpp src/geometryreader.cpp src/mwv.cpp src/mwv_base.cpp src/cmwv_ps.cpp) #src/cmwv.cpp
 
 
 # Make ui files from the designer to header files
@@ -66,10 +73,8 @@ endif()
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include) # ${QT_INCLUDES})
 include_directories(${QT_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 
-#add_executable(testes src/teste.cpp)
-#target_link_libraries(testes ${LIBS} ${QT_LIBRARIES}  ${CGAL_LIBRARIES}  ${CGAL_3RD_PARTY_LIBRARIES})
 
-add_executable(CMWV ${CMWV_SRCS} ${CMWV_HEADERS}  ${project_UI_MOC} ${project_UI_SRCS})
+add_executable(CMWV ${CMWV_SRCS} ${CMWV_HEADERS} ${Ui_HEADERS_MOC} ${project_UI_MOC} ${project_UI_SRCS} ${project_UI_HDRS})
 target_link_libraries(CMWV ${LIBS} ${QT_LIBRARIES}  ${CGAL_LIBRARIES}  ${CGAL_3RD_PARTY_LIBRARIES} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 #add_executable(poly examples/polygon.cpp)
 #target_link_libraries(poly ${LIBS} ${QT_LIBRARIES}  ${CGAL_LIBRARIES}  ${CGAL_3RD_PARTY_LIBRARIES})

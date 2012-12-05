@@ -48,21 +48,27 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
     }
     threads.join_all();
     //processShadows(0, sites.size(), sites, weights, obstacles, extent, concept);
-
+    GeometryReader geom;
+    geom.exportMWVDiagramToGDAL(this->_visibleAreas,"vis_paral");
     cout<< "Creating dominance areas"<<endl;
     //processing dominance areas
     this->_diagram.clear();
     _diagram.resize(sites.size());
     boost::thread_group threads2;
+    //vector<cmwv_ps> teste;
+    //teste.resize(4);
     for (int i=0;i<numberOfThreads;i++) {
         startId=sitesPerGroup*i;
         endId=sitesPerGroup*(i+1)-1;
-        threads2.add_thread(new boost::thread(&cmwv_ps::processSites,this, startId, endId, sites, weights, extent));
+
+        threads2.add_thread(new boost::thread(&cmwv_ps::processSites,this, startId, endId, sites, weights, extent, this->_visibleAreas));
     }
     threads2.join_all();
 
 
     dominanceAreas=this->_diagram;
+    //GeometryReader teste;
+    //teste.exportMWVDiagramToGDAL(this->_visibleAreas,"vis");
     this->_diagram.clear();
 
 }
@@ -109,7 +115,8 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
     nElements=obstacle.size();
     NT currentTotal=0, currentAngle=0,newTotal=0, maxTotal=0, minTotal=0, minDist=0;
     bool isPolygon=false;
-    if (obstacle[0]==obstacle[obstacle.size()-1]) isPolygon=true;
+    //if (obstacle[0]==obstacle[obstacle.size()-1]) isPolygon=true;
+    isPolygon=this->isPolygon(obstacle);
     minDist=CGAL::squared_distance(s,obstacle[0]);
     for (unsigned int i=1; i<nElements;i++) {
         currentAngle=angle(s, obstacle[i-1], obstacle[i]);
@@ -205,9 +212,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
     return (S.number_of_polygons_with_holes()>0);
 }*/
 
-void cmwv_ps::processSites(int startId, int endId,siteVector sites, weightVector weights, Bbox_2 extent) {
-    vector<Polygon_set_2> visibleAreas;
-    visibleAreas=this->_visibleAreas;
+void cmwv_ps::processSites(int startId, int endId,siteVector sites, weightVector weights, Bbox_2 extent, vector<Polygon_set_2> visibleAreas) {
     for (int i=0;i<visibleAreas.size();i++) {
         cout <<" "<<visibleAreas[i].number_of_polygons_with_holes();
     }
@@ -244,7 +249,7 @@ void cmwv_ps::processSites(int startId, int endId,siteVector sites, weightVector
     }
 }
 
-void cmwv_ps::processShadows(int startId, int endId, siteVector &sites, weightVector &weights, obstacleVector &obstacles, Bbox_2 extent, VisibilityConcept concept) {
+void cmwv_ps::processShadows(int startId, int endId, siteVector sites, weightVector weights, obstacleVector obstacles, Bbox_2 extent, VisibilityConcept concept) {
     Polygon_2 wholeArea;
     wholeArea=BoxAsPolygon(extent);
     cout <<"Processing from "<< startId << " to "<< endId<<endl;

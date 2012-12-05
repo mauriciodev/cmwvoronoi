@@ -502,7 +502,6 @@ bool GeometryReader::getObstaclesFromGDAL(std::string filename, obstacleVector &
                poLine->getPoint(j,&poPoint);
                ob.push_back(Point_2(poPoint.getX(),poPoint.getY()));
            }
-
            //cout<< poPoint->getX()<<", "<<poPoint->getY()<<endl;
            obstacles.push_back(ob);
         } else  {
@@ -512,4 +511,22 @@ bool GeometryReader::getObstaclesFromGDAL(std::string filename, obstacleVector &
 
     return true;
 
+}
+
+vector<string> GeometryReader::listWeightAttributes(std::string filename) {
+    OGRDataSource *poDS;
+    vector<string> result;
+    poDS = OGRSFDriverRegistrar::Open( filename.c_str(), FALSE );
+    if( poDS == NULL ) return result;
+    OGRLayer  *poLayer= poDS->GetLayer(0);
+    if( poLayer == NULL ) return result;
+    OGRFeatureDefn *attributes=poLayer->GetLayerDefn();
+    for (int i=0;i<attributes->GetFieldCount();i++) {
+        OGRFieldType t=attributes->GetFieldDefn(i)->GetType();
+        if ((t==OFTInteger) || (t==OFTReal)) {
+            result.push_back(attributes->GetFieldDefn(i)->GetNameRef());
+        }
+    }
+
+    return result;
 }

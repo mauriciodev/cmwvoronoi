@@ -93,19 +93,23 @@ void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Cur
     /*!Returns the boundary that divides the dominances of two points*/
     /*FIXME line length*/
     //Aurenhammer's formulae
-    double s2y=CGAL::to_double(s2.y());
+    NT s2y=s2.y();
+    NT s1y=s1.y();
+    NT s2x=s2.x();
+    NT s1x=s1.x();
+    /*double s2y=CGAL::to_double(s2.y());
     double s1y=CGAL::to_double(s1.y());
     double s2x=CGAL::to_double(s2.x());
-    double s1x=CGAL::to_double(s1.x());
+    double s1x=CGAL::to_double(s1.x());*/
     if(w1==w2) {
-        double mx=CGAL::to_double((s1x+s2x)/2);
-        double my=CGAL::to_double((s1y+s2y)/2);
-        double dx=CGAL::to_double(s1x-s2x);
-        double dy=CGAL::to_double(s1y-s2y);
+        NT mx=(s1x+s2x)/2;
+        NT my=(s1y+s2y)/2;
+        NT dx=s1x-s2x;
+        NT dy=s1y-s2y;
         Point_2 p1,p2;
-        double d=(dx*dx+dy*dy)/1000.;
+        NT d=(dx*dx+dy*dy)/1000.;
         if (dy!=0) {
-            double m=atan(-1.*dx/dy);
+            double m=atan(-1.*CGAL::to_double(dx/dy));
             p1=Point_2(-d*cos(m)+mx,-d*sin(m)+my);
             p2=Point_2(d*cos(m)+mx,d*sin(m)+my);
         } else {
@@ -116,12 +120,15 @@ void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Cur
         //w1=w2*1.001;
     //}
     } else {
-        double cx=(w1*w1*s2x-w2*w2*s1x)/(w1*w1-w2*w2);
-        double cy=(w1*w1*s2y-w2*w2*s1y)/(w1*w1-w2*w2);
+        double den=1/CGAL::to_double(w1*w1-w2*w2);
+        NT cx=(w1*w1*s2x-w2*w2*s1x)*den;
+        NT cy=(w1*w1*s2y-w2*w2*s1y)*den;
+        //double cx=(w1*w1*s2x-w2*w2*s1x)/(w1*w1-w2*w2);
+        //double cy=(w1*w1*s2y-w2*w2*s1y)/(w1*w1-w2*w2);
         //cout<< "Center:" <<CGAL::to_double(cx) << "," << CGAL::to_double(cy)<<endl;
         double d= CGAL::sqrt(CGAL::to_double((s1x-s2x)*(s1x-s2x) + (s1y-s2y)*(s1y-s2y)));
 
-        double r=w1*w2*d/(w1*w1-w2*w2);
+        double r=w1*w2*d*den;
         //cout<<LineString "Radius:" <<CGAL::to_double(r)<<endl;
         if (r<0) r=r*-1;
         curve= Circle_2( Kernel::Point_2(cx,cy), r*r);
@@ -147,7 +154,7 @@ CGAL::Bbox_2 mwv_base::getBoundingBox(siteVector &sites) {
     //else toly=tolx=10;
 
     //std::cout <<minx-tolx << miny-toly << maxx+tolx << maxy+toly<<std::endl;
-    toly=tolx=10000;
+    //toly=tolx=10000;
     return Bbox_2(minx-tolx,miny-toly,maxx+tolx,maxy+toly);
 }
 

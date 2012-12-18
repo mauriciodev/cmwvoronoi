@@ -136,6 +136,33 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
             minDist=CGAL::squared_distance(s,obstacle[i]);
         }
     }
+
+    if (isPolygon) { //the ids are circular
+        nElements--;  //last point is repeated
+        minDistId=circularId(minDistId,nElements);
+        vmaxId=circularId(vmaxId,nElements);
+        vminId=circularId(vminId,nElements);
+    }
+    //workaround for very few vertices in each part:
+    bool isNext=abs(vminId-vmaxId)==1 || (abs(vminId-vmaxId)==nElements-2);
+    if (((minDistId==vminId) || (minDistId==vmaxId)) && !isNext) {
+        //last point is equal to the first
+        int nextId=circularId(minDistId+1,nElements);
+        int previousId=circularId(minDistId-1,nElements);
+        if (CGAL::squared_distance(s,obstacle[previousId]) < CGAL::squared_distance(s,obstacle[nextId])) {
+            minDistId=previousId;
+        } else {
+            minDistId=nextId;
+        }
+    }
+    if (((minDistId==vminId) || (minDistId==vmaxId)) && isNext) {
+        int nextId=minDistId;
+        while ((nextId==vminId) || (nextId==vmaxId)) nextId=circularId(nextId+1,nElements);
+        if (CGAL::squared_distance(s,obstacle[nextId]) < CGAL::squared_distance(s,obstacle[minDistId])) {
+            minDistId=nextId;
+        }
+    }
+    //end of workaround
     vector<Point_2> boxVertexes;
     closePolygon(s,obstacle[vminId],obstacle[vmaxId],extent,boxVertexes);
     //reverse the points to start from max vertex
@@ -145,6 +172,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
     //Point_2 p1extent=intersectWithExtent(s, obstacle[vminId], extent);
     //shadow.push_back(GPS_Segment_2(p1extent,obstacle[vminId]));
     int inc=(vmaxId-vminId)/abs(vmaxId-vminId);
+
     if (isPolygon==false){
         for (int k=vminId;k!=vmaxId;k+=inc) { //for each pair of lines created
             //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
@@ -153,17 +181,21 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
             }
         }
     } else {
-        //check if the vertex with minimum distance is between the two maximums in the vector
-        if( abs(minDistId-vminId)+abs(minDistId-vmaxId)== abs(vminId-vmaxId) ) {
+        if (((circularId(minDistId,nElements)==circularId(vminId,nElements)) || (circularId(minDistId,nElements)==circularId(vmaxId,nElements))) && isNext) { //this means that there are too few vertices to represent one part. Make a virtual point
+            shadow.push_back(GPS_Segment_2(obstacle[vminId],obstacle[vmaxId]));
+
+        } else if( abs(minDistId-vminId)+abs(minDistId-vmaxId)== abs(vminId-vmaxId) ) {
+            //check if the vertex with minimum distance is between the two maximums in the vector
             //between, just walk normally from min to max
-            for (int k=vminId;k!=vmaxId;k+=inc) { //for each pair of lines created
+            for (int k=circularId(vminId,nElements);k!=circularId(vmaxId,nElements);k=circularId(k+inc,nElements)) { //for each pair of lines created
                 //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
                 if (obstacle[k]!=obstacle[k+inc]) {
                     shadow.push_back(GPS_Segment_2(obstacle[k],obstacle[k+inc]));
                 }
             }
         } else { //not between the two, reverse walking using mod to circle around the vector
-            for (int k=vminId;k!=vmaxId;k=circularId(k-inc,nElements)) { //for each pair of lines created
+
+            for (int k=circularId(vminId,nElements);k!=circularId(vmaxId,nElements);k=circularId(k-inc,nElements)) { //for each pair of lines created
                 //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
                 int kinc2=circularId(k-inc,nElements);
                 if (obstacle[k]!=obstacle[kinc2]) {
@@ -173,6 +205,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
 
 
         }
+
 
     }
     for (unsigned int i=0;i<boxVertexes.size()-1;i++) {

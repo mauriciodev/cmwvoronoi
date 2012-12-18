@@ -13,14 +13,20 @@ void CMWVDialog::okPushButton_clicked() {
     string breakLines=this->breakLinesComboBox->currentText().toStdString();
     QTime t;
     t.restart();
+    cmwv_ps::VisibilityConcept vis;
+    if (this->visibilityConceptComboBox->currentIndex()==1) {
+        vis=cmwv_ps::DePaulo;
+    } else {
+        vis=cmwv_ps::Wang;
+    }
     if (breakLines.size()>0) {
         pointReader.getObstaclesFromGDAL(breakLines,obstacles);
         cmwv_ps CDiagramGenerator;
-        CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),Diagram, cmwv_ps::DePaulo,1);
+        CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),Diagram, vis,1);
 
     } else {
         mwv DiagramGenerator;
-        DiagramGenerator.getDiagram(pointSet,weights,DiagramGenerator.getBoundingBox(pointSet),Diagram,1);
+        DiagramGenerator.getDiagram(pointSet,weights,DiagramGenerator.getBoundingBox(pointSet),Diagram,0);
     }
     pointReader.exportMWVDiagramToGDAL(Diagram,this->layerNameLineEdit->text().toStdString());
 

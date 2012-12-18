@@ -60,9 +60,9 @@ void testCMWV(siteVector &pointSet, weightVector &weights, obstacleVector &obsta
     //cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
     GeometryReader teste;
     teste.exportMWVDiagramToGDAL(CDiagramGenerator._visibleAreas,"visibility-depaulo");
-    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::Wang,1);
-    pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv-wang");
-    teste.exportMWVDiagramToGDAL(CDiagramGenerator._visibleAreas,"visibility-wang");
+//x    CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),cDiagram, cmwv_ps::Wang,1);
+//    pointReader.exportMWVDiagramToGDAL(cDiagram,"cmwv-wang");
+//    teste.exportMWVDiagramToGDAL(CDiagramGenerator._visibleAreas,"visibility-wang");
     //GeometryReader teste;
     //teste.exportArrangementToGDAL(arrangement, "teste-arr");
     //teste.exportMWVDiagramToGDAL(dominanceAreas,"cmwv");
@@ -91,8 +91,8 @@ int main(int argc, char *argv[]){
     //pointReader.getRandomPoints(npoints,pointSet, weights);
     //pointReader.getPointsFromGDAL("C:/dados/INTCIR10.shp","frequencia",pointSet,weights);
     //string c="/media/7C340CAA340C6A0A/";
-    //pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/point_sample.shp","frequencia",pointSet,weights);
-    //pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin1000.shp",obstacles);
+    pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/point_sample.shp","frequencia",pointSet,weights);
+    pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin1000.shp",obstacles);
 
     //pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
     //pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
@@ -105,9 +105,9 @@ int main(int argc, char *argv[]){
     //pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/exemplo/pontos2.shp","frequencia",pointSet,weights);
     //pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/exemplo/barreirasL.shp",obstacles);
     //testMWV(pointSet,weights);
-    //testCMWV(pointSet,weights,obstacles);
+    testCMWV(pointSet,weights,obstacles);
 
-    return startUI(argc, argv);
+    //return startUI(argc, argv);
 
 
     //int limit=91;

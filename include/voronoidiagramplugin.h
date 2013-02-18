@@ -3,6 +3,7 @@
 
 #include <TViewAbstractPlugin.h>
 
+
 //Qt include files
 #include <qobject.h>
 
@@ -33,12 +34,14 @@ protected slots:
 	void showVoronoiWindow();
     void showDelaunayWindow();
     void showMWVoronoiWindow();
+    void showGeneralizationWindow();
 
 protected:
 
 	QAction* showVoronoiWinAction_;
     QAction* showDelaunayWinAction_;
     QAction* showMWVoronoiWinAction_;
+    QAction* showGeneralizationWinAction_;
 };
 
 #endif //__VORONOIDIAGRAM_PLUGIN_H_

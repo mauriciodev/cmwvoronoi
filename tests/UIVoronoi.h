@@ -19,6 +19,7 @@ void okPushButton_clicked();
 void themeBrowseClick();
 void breaklinesBrowseClick();
 void resultBrowseClick();
+void delimiterBrowseClick();
 //public signals:
 //
 //private:

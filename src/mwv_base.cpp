@@ -379,3 +379,34 @@ bool mwv_base::isPolygon(obstacle &obs) {
         return false;
     }
 }
+
+void mwv_base::douglasPeucker(obstacle::iterator obsStart, obstacle::iterator obsEnd, obstacle &obsOut, double tol) {
+    /*!Douglas peucker linestring simplification*/
+    NT dmax=0;
+    obstacle::iterator maxCoord=obsStart;
+    Line_2 base(*obsStart,*(obsEnd-1));
+    //cout<<base<<endl;
+    for(obstacle::iterator it= obsStart; it!=obsEnd;++it) {
+        NT d=CGAL::squared_distance(base,*it);
+        if (d>dmax) {
+            maxCoord=it;
+            dmax=d;
+        }
+    }
+    //cout<<int(maxCoord-obsStart)<<endl
+    // If max distance is greater than epsilon, recursively simplify
+    if (dmax >= (tol*tol)) {
+        obstacle part1,part2;
+        douglasPeucker(obsStart,maxCoord+1, part1,tol);
+        douglasPeucker(maxCoord,obsEnd,part2,tol);
+        obsOut.reserve(part1.size()+part2.size());
+        obsOut.insert(obsOut.end(),part1.begin(),part1.end());
+        obsOut.insert(obsOut.end(),part2.begin()+1,part2.end());
+    } else {
+        obsOut.clear();
+        obsOut.push_back(*obsStart);
+        obsOut.push_back(*(obsEnd-1));
+    }
+
+}
+

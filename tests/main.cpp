@@ -4,6 +4,7 @@
 #include <iostream>
 #include <QApplication>
 #include "UIVoronoi.h"
+//#include "SimplifyWindow.h"
 using namespace std;
 
 #include <qdatetime.h>
@@ -34,6 +35,7 @@ void testMWV(siteVector &pointSet, weightVector &weights) {
     GeometryReader pointReader;
     cout<< "Found " << pointSet.size() << " weighted points."<<endl;
     QTime t;
+
     mwv DiagramGenerator;
     cout<< "Generating Multiplicative Diagram."<<endl;
     MWVDiagram diagram;
@@ -74,16 +76,26 @@ bool startUI(int argc, char *argv[]) {
     app.setOrganizationName("INPE");
     app.setApplicationName("CMWVoronoi");
     CMWVDialog mainWin;
+
+
     mainWin.show();
+
+    //SimplifyWindow sim;
+    //sim.show();
     return app.exec();
 }
 
+
+
 int main(int argc, char *argv[]){
+
     //cmwv generator;
     //cout << -11 % 10<<endl;
     testApolonius();
     //testPolygonClosing();
     GeometryReader pointReader;
+    Bbox_2 box;
+    pointReader.getExtent("/home/mauricio/Desktop/INPE/dissertacao/dados/pontos_vendas_pt.shp",box);
     siteVector pointSet;
     weightVector weights;
     obstacleVector obstacles;
@@ -92,7 +104,13 @@ int main(int argc, char *argv[]){
     //pointReader.getPointsFromGDAL("C:/dados/INTCIR10.shp","frequencia",pointSet,weights);
     //string c="/media/7C340CAA340C6A0A/";
     pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/point_sample.shp","frequencia",pointSet,weights);
-    pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin1000.shp",obstacles);
+    pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin.shp",obstacles);
+
+    mwv teste;
+    obstacle out;
+    obstacle in=obstacles[9];
+    teste.douglasPeucker(in.begin(), in.end()-1,out, 100);
+    cout<< "From "<<in.size() << " to "<<out.size()<<endl;
 
     //pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
     //pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
@@ -105,9 +123,9 @@ int main(int argc, char *argv[]){
     //pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/exemplo/pontos2.shp","frequencia",pointSet,weights);
     //pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/exemplo/barreirasL.shp",obstacles);
     //testMWV(pointSet,weights);
-    testCMWV(pointSet,weights,obstacles);
+    //testCMWV(pointSet,weights,obstacles);
 
-    //return startUI(argc, argv);
+    return startUI(argc, argv);
 
 
     //int limit=91;

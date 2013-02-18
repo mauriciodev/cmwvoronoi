@@ -34,6 +34,7 @@ public:
     //bool exportArrangementFacesToGDAL(Arrangement_2 &Arr, std::string filename, Bbox_2 extent);
     bool exportDiagramToGDAL(std::string filename);
     bool exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string filename);
+    bool getExtent(std::string filename, Bbox_2 &box);
     double measureAngle(Point_2 p1, Point_2 p0, Point_2 p2);
     bool isInside(Point_2 p, Bbox_2 box);
     Point_2 constrainInside(Point_2 p, Bbox_2 box);

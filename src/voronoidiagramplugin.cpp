@@ -1,5 +1,6 @@
 #include <voronoidiagramplugin.h>
 #include <VoronoiWindow.h>
+#include <SimplifyWindow.h>
 
 //Qt include file
 #include <qaction.h>
@@ -43,6 +44,12 @@ void VoronoiDiagramPlugin::init()
             showDelaunayWinAction_->setText(tr("Delaunay"));
             showDelaunayWinAction_->setIcon(QIcon(QPixmap(":/images/delaunay.png")));
 
+            // Douglas peucker generalization
+            showGeneralizationWinAction_ = new QAction(0);
+            showGeneralizationWinAction_->setMenuText(tr("Generalization"));
+            showGeneralizationWinAction_->setText(tr("Generalization"));
+            showGeneralizationWinAction_->setIcon(QIcon(QPixmap(":/images/delaunay.png")));
+
 			std::string mainMenuName = "TerraViewPlugins.";
 			mainMenuName += (std::string)tr("Diagrams");
 
@@ -53,11 +60,13 @@ void VoronoiDiagramPlugin::init()
                 mnu->addAction(showVoronoiWinAction_);
                 mnu->addAction(showMWVoronoiWinAction_);
                 mnu->addAction(showDelaunayWinAction_);
+                mnu->addAction(showGeneralizationWinAction_);
             }
 
             connect(showVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showVoronoiWindow()));
             connect(showMWVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showMWVoronoiWindow()));
             connect(showDelaunayWinAction_, SIGNAL(activated()), this, SLOT(showDelaunayWindow()));
+            connect(showGeneralizationWinAction_, SIGNAL(activated()), this, SLOT(showGeneralizationWindow()));
 		}
 	}
 	catch(...)
@@ -69,6 +78,8 @@ void VoronoiDiagramPlugin::init()
 		showMWVoronoiWinAction_ = 0;
         delete showDelaunayWinAction_;
 		showDelaunayWinAction_ = 0;
+        delete showGeneralizationWinAction_;
+        showGeneralizationWinAction_ = 0;
 	}
 }
 
@@ -95,4 +106,10 @@ void VoronoiDiagramPlugin::showDelaunayWindow()
 {
 	VoronoiWindow win(params_,Delaunay);
 	win.showWindow();
+}
+
+void VoronoiDiagramPlugin::showGeneralizationWindow()
+{
+    //SimplifyWindow win(); //params_, 0
+    //win.ShowWindow();
 }

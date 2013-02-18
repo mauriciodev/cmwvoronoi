@@ -5,6 +5,17 @@ GeometryReader::GeometryReader()
     OGRRegisterAll();
 }
 
+bool GeometryReader::getExtent(std::string filename, Bbox_2 &box) {
+    OGRDataSource       *poDS;
+    poDS = OGRSFDriverRegistrar::Open( filename.c_str(), FALSE );
+    if( poDS == NULL ) return false;
+    OGRLayer  *poLayer= poDS->GetLayer(0);
+    if( poLayer == NULL ) return false;
+    OGREnvelope env;
+    poLayer->GetExtent(&env);
+    box=Bbox_2(env.MinX,env.MinY,env.MaxX,env.MaxY);
+}
+
 void GeometryReader::getTestPoints(siteVector &v, weightVector &w) {
     v.push_back(Point_2(1,1));
     v.push_back(Point_2(10,0));

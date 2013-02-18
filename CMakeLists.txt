@@ -39,17 +39,17 @@ SET( QT_USE_QT3SUPPORT TRUE )
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 # tell cmake where to search for Qt/KDE headers:
 
-SET(project_UI ui/UIVoronoi.ui)
+SET(project_UI ui/UIVoronoi.ui ) #ui/simplify.ui
 QT4_WRAP_UI( project_UI_HDRS ${project_UI} )
 MESSAGE( STATUS "UI header:         " "${project_UI_HDRS}" )
 
 
 
-set(Ui_Header tests/UIVoronoi.h)
+set(Ui_Header tests/UIVoronoi.h ) #/include/SimplifyWindow.h
 QT4_WRAP_CPP(Ui_HEADERS_MOC ${Ui_Header})
 
-set(CMWV_HEADERS ${Ui_Header} include/geometryreader.h  include/mwv.h include/mwv_base.h include/cmwv_ps.h) #include/cmwv_definitions.h include/cmwv.h
-set(CMWV_SRCS tests/main.cpp tests/UIVoronoi.cpp src/geometryreader.cpp src/mwv.cpp src/mwv_base.cpp src/cmwv_ps.cpp) #src/cmwv.cpp
+set(CMWV_HEADERS ${Ui_Header} include/geometryreader.h  include/mwv.h include/mwv_base.h include/cmwv_ps.h ) #include/cmwv_definitions.h include/cmwv.h include/SimplifyWindow.h
+set(CMWV_SRCS tests/main.cpp tests/UIVoronoi.cpp src/geometryreader.cpp src/mwv.cpp src/mwv_base.cpp src/cmwv_ps.cpp ) #src/cmwv.cpp src/SimplifyWindow.cpp
 
 
 # Make ui files from the designer to header files

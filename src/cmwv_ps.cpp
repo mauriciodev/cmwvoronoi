@@ -136,6 +136,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
             minDist=CGAL::squared_distance(s,obstacle[i]);
         }
     }
+    //abs(vminId-vmaxId)==1 || (abs(vminId-vmaxId)==nElements-2);
 
     if (isPolygon) { //the ids are circular
         nElements--;  //last point is repeated
@@ -143,8 +144,9 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
         vmaxId=circularId(vmaxId,nElements);
         vminId=circularId(vminId,nElements);
     }
+    bool isNext=(abs(vminId-vmaxId)==1) || (abs(vminId-vmaxId)==nElements-1);
     //workaround for very few vertices in each part:
-    bool isNext=abs(vminId-vmaxId)==1 || (abs(vminId-vmaxId)==nElements-2);
+
     if (((minDistId==vminId) || (minDistId==vmaxId)) && !isNext) {
         //last point is equal to the first
         int nextId=circularId(minDistId+1,nElements);
@@ -156,12 +158,24 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
         }
     }
     if (((minDistId==vminId) || (minDistId==vmaxId)) && isNext) {
+        //if there is only one edge between vminId and vmaxId, check if the line crosses the line with the minimum distance from the nearest non min/max vertex and the site.
         int nextId=minDistId;
+        Line_2 baseLine(obstacle[vminId],obstacle[vmaxId]);
         while ((nextId==vminId) || (nextId==vmaxId)) nextId=circularId(nextId+1,nElements);
-        if (CGAL::squared_distance(s,obstacle[nextId]) < CGAL::squared_distance(s,obstacle[minDistId])) {
+        Line_2 nonMinMaxBaseLine(s,obstacle[nextId]);
+
+        if (CGAL::do_intersect(baseLine,nonMinMaxBaseLine)) {
+            //the baseLine is the nearest
+            //do nothing
+            //cout<<"problema"<<endl;
+        } else {
             minDistId=nextId;
         }
+
+
+
     }
+
     //end of workaround
     vector<Point_2> boxVertexes;
     closePolygon(s,obstacle[vminId],obstacle[vmaxId],extent,boxVertexes);

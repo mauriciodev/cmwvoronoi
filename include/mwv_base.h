@@ -61,6 +61,7 @@ public:
     double reducedAngle(double angle);
 	double isPointInBox(Point_2 p, Bbox_2 box);
     bool isPolygon(obstacle &obs);
+    void douglasPeucker(obstacle::iterator obsStart, obstacle::iterator obsEnd, obstacle &obsOut, double tol);
     MWVDiagram _diagram; //lockable diagram
     boost::mutex _mutex; //mutex to lock it
 };

@@ -13,20 +13,32 @@ void CMWVDialog::okPushButton_clicked() {
     string breakLines=this->breakLinesComboBox->currentText().toStdString();
     QTime t;
     t.restart();
+
     cmwv_ps::VisibilityConcept vis;
     if (this->visibilityConceptComboBox->currentIndex()==1) {
         vis=cmwv_ps::DePaulo;
     } else {
         vis=cmwv_ps::Wang;
     }
+    Bbox_2 box;
     if (breakLines.size()>0) {
         pointReader.getObstaclesFromGDAL(breakLines,obstacles);
         cmwv_ps CDiagramGenerator;
-        CDiagramGenerator.getDiagram(pointSet,weights,obstacles,CDiagramGenerator.getBoundingBox(pointSet,obstacles),Diagram, vis,1);
+        if (boxComboBox->currentText()!="") {
+            pointReader.getExtent(boxComboBox->currentText().toStdString(),box);
+        } else {
+            box=CDiagramGenerator.getBoundingBox(pointSet,obstacles);
+        }
+        CDiagramGenerator.getDiagram(pointSet,weights,obstacles,box,Diagram, vis,1);
 
     } else {
         mwv DiagramGenerator;
-        DiagramGenerator.getDiagram(pointSet,weights,DiagramGenerator.getBoundingBox(pointSet),Diagram,0);
+        if (boxComboBox->currentText()!="") {
+            pointReader.getExtent(boxComboBox->currentText().toStdString(),box);
+        } else {
+            box=DiagramGenerator.getBoundingBox(pointSet);
+        }
+        DiagramGenerator.getDiagram(pointSet,weights,box,Diagram,0);
     }
     pointReader.exportMWVDiagramToGDAL(Diagram,this->layerNameLineEdit->text().toStdString());
 
@@ -64,5 +76,13 @@ void CMWVDialog::resultBrowseClick() {
         tr("Open ShapeFile"), ".", tr("Shapefiles (*.shp)")).toStdString();
     if(fileName!="") {
         this->layerNameLineEdit->setText(fileName.c_str());
+    }
+}
+void CMWVDialog::delimiterBrowseClick() {
+    string fileName = QFileDialog::getOpenFileName(this,
+        tr("Open ShapeFile"), ".", tr("Shapefiles (*.shp)")).toStdString();
+    if(fileName!="") {
+        this->boxComboBox->addItem(fileName.c_str());
+        this->boxComboBox->setCurrentIndex(this->boxComboBox->count()-1);
     }
 }

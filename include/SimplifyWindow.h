@@ -2,7 +2,7 @@
 #define UISIMPLIFY_H
 #include "ui_simplify.h"
 //#include "VoronoiWindow.h"
-/*#include <QMessageBox>
+#include <QMessageBox>
 
 
 //#include <ui/qt4_help.h>
@@ -21,7 +21,7 @@ class TeLayer;
 class TeLineSet;
 class TePolygonSet;
 class TeProjection;
-class TeTheme;*/
+class TeTheme;
 
 #include <stdlib.h>
 
@@ -29,9 +29,9 @@ class SimplifyWindow: public QDialog, private Ui::UISimplify  {
     Q_OBJECT
 
 public:
-        SimplifyWindow() ; //PluginParameters* pp
+        SimplifyWindow(PluginParameters* pp) ;
         ~SimplifyWindow(){};
-        void ShowWindow();
+        void showWindow();
 
 public slots:
     void pushButton_clicked();
@@ -39,7 +39,7 @@ public slots:
 
 
 private:
-     //PluginParameters* plugin_params_;
+     PluginParameters* plugin_params_;
 
         
 };

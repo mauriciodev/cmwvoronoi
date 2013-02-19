@@ -110,6 +110,6 @@ void VoronoiDiagramPlugin::showDelaunayWindow()
 
 void VoronoiDiagramPlugin::showGeneralizationWindow()
 {
-    SimplifyWindow win; //params_, 0
-    win.exec();
+    SimplifyWindow win(params_);
+    win.showWindow();
 }

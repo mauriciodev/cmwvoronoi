@@ -4,7 +4,7 @@
 #include <iostream>
 #include <QApplication>
 #include "UIVoronoi.h"
-//#include "SimplifyWindow.h"
+#include "SimplifyWindow.h"
 using namespace std;
 
 #include <qdatetime.h>
@@ -75,13 +75,13 @@ bool startUI(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setOrganizationName("INPE");
     app.setApplicationName("CMWVoronoi");
-    CMWVDialog mainWin;
+    //CMWVDialog mainWin;
 
 
-    mainWin.show();
+    //mainWin.show();
 
-    //SimplifyWindow sim;
-    //sim.show();
+    SimplifyWindow sim;
+    sim.show();
     return app.exec();
 }
 

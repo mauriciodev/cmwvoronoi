@@ -112,7 +112,7 @@ bool VoronoiWindow::MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &p
 	}
 }
 
-bool VoronoiWindow::MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, std::vector<TeMultiPolygon> &mpols){
+bool VoronoiWindow::MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, std::vector<TeMultiPolygon> &mpols, double tol){
     MWVDiagram::iterator dIt;
     int polId=1;
     mwv_base base;
@@ -134,7 +134,7 @@ bool VoronoiWindow::MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, std::vector<
 
                 vector<double>x,y;
 
-                base.arcAsLinestring(*cIt,x,y);
+                base.arcAsLinestring(*cIt,x,y,tol);
                 for(uint i=0; i<x.size()-1;i++) {
                     if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                         ring.add(TeCoord2D(x[i],y[i]));
@@ -153,7 +153,7 @@ bool VoronoiWindow::MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, std::vector<
                 for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
                     vector<double>x,y;
 
-                    base.arcAsLinestring(*cIt,x,y);
+                    base.arcAsLinestring(*cIt,x,y,tol);
                     for(uint i=0; i<x.size()-1;i++) {
                         if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
                             innerRing.add(TeCoord2D(x[i],y[i]));
@@ -191,12 +191,12 @@ bool VoronoiWindow::MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, std::vector<
 }
 
 VoronoiWindow::VoronoiWindow(PluginParameters* pp, const enumDiagramType diagramType) : 
-UIVoronoi((QWidget*)pp->qtmain_widget_ptr_),
-plugin_params_(pp)
+UIVoronoi((QWidget*)pp->qtmain_widget_ptr_),plugin_params_(pp)
 {
 	/*! Selects what aditional parameters each diagram needs.*/
 	ui = (new Ui::UIVoronoi);
 	ui->setupUi(this);
+    this->hideBrowseButtons();
 
     ui->weightGroupBox->hide();
     this->diagramType=diagramType;
@@ -439,12 +439,12 @@ void VoronoiWindow::okPushButton_clicked()
             pointSet[i]=Point_2(x[i],y[i]);
             weights[i]=w[i];
         }
-        
+        double tol=ui->toleranceLineEdit->text().toDouble();
         if (useBreakLines) {
             cmwv_ps DiagramGenerator;
             //transform terralib's lineset into CGAL's lineset
             DiagramGenerator.getDiagram(pointSet, weights,obstacles,extent,mwdiagram, visConcept,1 );
-            MWDiagramAsTeMultiPolygons(DiagramGenerator._visibleAreas,visibility);
+            MWDiagramAsTeMultiPolygons(DiagramGenerator._visibleAreas,visibility,tol);
             //mwvdg->generateVoronoi(x, y, w, numPoints, b.x1_, b.x2_, b.y1_, b.y2_,breakLines );
         } else {
             mwv DiagramGenerator;
@@ -456,7 +456,7 @@ void VoronoiWindow::okPushButton_clicked()
         //diagram=*mwvdg->domList;
         //MWDiagramAsTePolygonSet(mwdiagram,diagram);
 
-        MWDiagramAsTeMultiPolygons(mwdiagram,diagram);
+        MWDiagramAsTeMultiPolygons(mwdiagram,diagram,tol);
 
     }
    
@@ -492,7 +492,11 @@ void VoronoiWindow::okPushButton_clicked()
 
     //if the layers are not equal, I should to clip the diagram
     if (theme->name()!=themeDelimiter->name()) {
-        clipLayer(diagramLayer,themeDelimiter,db);
+        TePolygonSet delimiterPolygons;
+        themeDelimiter->layer()->getPolygons(delimiterPolygons);
+        TeMultiPolygon mpol;
+        //Union(delimiterPolygons,mpol);
+        //clipLayer(diagramLayer,themeDelimiter,db);
     } 
 
     wait.resetWaitCursor();
@@ -566,32 +570,32 @@ void VoronoiWindow::showWindow()
 
 TeLayer* VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, const TeGeomRep& rep)
 {
-	TeLayer* layer = new TeLayer(name, db, proj);
+    TeLayer* layer = new TeLayer(name, db, proj);
 
-	TeAttributeList attList;
-	TeAttribute at;
-	at.rep_.type_ = TeSTRING;
-	at.rep_.numChar_ = 255;
-	at.rep_.name_ = "object_id";
-	at.rep_.isPrimaryKey_ = true;
-	attList.push_back(at);
+    TeAttributeList attList;
+    TeAttribute at;
+    at.rep_.type_ = TeSTRING;
+    at.rep_.numChar_ = 255;
+    at.rep_.name_ = "object_id";
+    at.rep_.isPrimaryKey_ = true;
+    attList.push_back(at);
 
-	TeTable attTable(name, attList, "object_id", "object_id");
-	if(!layer->createSfsTable(attTable, rep))
-	{
-		QMessageBox::critical(this, tr("Error"), tr("Error creating the new layer table."));
-		db->deleteLayer(layer->id());
+    TeTable attTable(name, attList, "object_id", "object_id");
+    if(!layer->createSfsTable(attTable, rep))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Error creating the new layer table."));
+        db->deleteLayer(layer->id());
         return 0;
-	}
+    }
 
     if(!layer->addGeometry(rep))
-	{
-		QMessageBox::critical(this, tr("Error"), tr("Error adding geometric representation to new layer."));
-		db->deleteLayer(layer->id());
-		return 0;
-	}
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Error adding geometric representation to new layer."));
+        db->deleteLayer(layer->id());
+        return 0;
+    }
 
-	return layer;
+    return layer;
 }
 
 bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TeLineSet& ls)
@@ -600,32 +604,32 @@ bool VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProje
     if(layer == 0)
         return false;
 
-	TeFeatureSet fs;
+    TeFeatureSet fs;
     TeTable& attrTable = layer->attrTables()[0];
     for(unsigned int i = 0; i < ls.size(); ++i)
     {
-        std::string sid = Te2String(i);	
-		ls[i].objectId(sid);
+        std::string sid = Te2String(i);
+        ls[i].objectId(sid);
 
-		TeTableRow row;
-		row.push_back(sid);
+        TeTableRow row;
+        row.push_back(sid);
 
-		TeMultiLine	geom(ls[i]);
+        TeMultiLine	geom(ls[i]);
 
-		TeFeature feature(row, geom);
-		fs.add(feature);
+        TeFeature feature(row, geom);
+        fs.add(feature);
     }
 
-	if(!layer->addFeatures(fs, false))
-	{
-		QMessageBox::critical(this, tr("Error"), tr("Error saving the new layer table."));
-		db->deleteLayer(layer->id());
-		return false;
-	}
+    if(!layer->addFeatures(fs, false))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Error saving the new layer table."));
+        db->deleteLayer(layer->id());
+        return false;
+    }
 
     return true;
 }
-    
+
 TeLayer * VoronoiWindow::createLayer(const std::string& name, TeDatabase* db, TeProjection* proj, TePolygonSet& ps)
 {
     TeLayer* layer = createLayer(name, db, proj, TeMULTIPOLYGONS);
@@ -731,15 +735,15 @@ TeTheme* VoronoiWindow::getTheme(const std::string& name)
     TeDatabase* db = plugin_params_->getCurrentDatabasePtr();
     TeThemeMap& themeMap = db->themeMap();
     TeTheme* theme = 0;
-	TeThemeMap::iterator themeIt;
-	for(themeIt = themeMap.begin(); themeIt != themeMap.end(); ++themeIt)
-	{
-		if(themeIt->second->name() == name)
-		{
-			theme = dynamic_cast<TeTheme*>(themeIt->second);
-			break;
-		}
-	}
+    TeThemeMap::iterator themeIt;
+    for(themeIt = themeMap.begin(); themeIt != themeMap.end(); ++themeIt)
+    {
+        if(themeIt->second->name() == name)
+        {
+            theme = dynamic_cast<TeTheme*>(themeIt->second);
+            break;
+        }
+    }
     return theme;
 }
 
@@ -748,15 +752,15 @@ TeLayer* VoronoiWindow::getLayer(const std::string& name)
     TeDatabase* db = plugin_params_->getCurrentDatabasePtr();
     TeLayerMap& layerMap = db->layerMap();
     TeLayer* layer = 0;
-	TeLayerMap::iterator layerIt;
-	for(layerIt = layerMap.begin(); layerIt != layerMap.end(); ++layerIt)
-	{
-		if(layerIt->second->name() == name)
-		{
+    TeLayerMap::iterator layerIt;
+    for(layerIt = layerMap.begin(); layerIt != layerMap.end(); ++layerIt)
+    {
+        if(layerIt->second->name() == name)
+        {
             layer = layerIt->second;
-			break;
-		}
-	}
+            break;
+        }
+    }
     return layer;
 }
 
@@ -775,7 +779,7 @@ bool VoronoiWindow::isLayerNameValid(const std::string& name)
     if(changed)
     {
         QString msg = tr("The Layer name is invalid: \n") + errorMessage.c_str();
-		msg += "\n" + tr("Please, try another.");
+        msg += "\n" + tr("Please, try another.");
         QMessageBox::information(this, tr("Information"), msg);
         return false;
     }
@@ -867,4 +871,12 @@ bool VoronoiWindow::PolygonSetToObstacles(TePolygonSet &ps, obstacleVector &obsV
 
 Bbox_2 VoronoiWindow::TeBox2Bbox_2(TeBox boxTe) {
     return Bbox_2(boxTe.x1(),boxTe.y1(),boxTe.x2(),boxTe.y2());
+}
+
+
+void VoronoiWindow::hideBrowseButtons() {
+    this->ui->themeBrowse->hide();
+    this->ui->delimiterBrowse->hide();
+    this->ui->breaklinesBrowse->hide();
+    this->ui->resultBrowse->hide();
 }

@@ -4,10 +4,18 @@
 #include <iostream>
 #include <QApplication>
 #include "UIVoronoi.h"
-#include "SimplifyWindow.h"
+//#include "voronoiBaseWindow.h"
+#include "awv.h"
 using namespace std;
 
 #include <qdatetime.h>
+
+void testAWV(siteVector &pointSet, weightVector &weights) {
+    awv test;
+    test.getDiagram(pointSet,weights);
+    GeometryReader gr;
+    gr.exportAGToGDAL(test.graph,"awv.shp");
+}
 
 void testApolonius() {
     mwv test;
@@ -42,10 +50,10 @@ void testMWV(siteVector &pointSet, weightVector &weights) {
     t.start();
     DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), diagram);
     cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
-    diagram.clear();
+    //diagram.clear();
     t.restart();
-    DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), diagram,1);
-    cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
+    //DiagramGenerator.getDiagram(pointSet, weights,DiagramGenerator.getBoundingBox(pointSet), diagram,1);
+    //cout<< "Time elapsed:" << t.elapsed()/1000.<<endl;
     pointReader.exportMWVDiagramToGDAL(diagram,"mwv");
     pointReader.exportPointsToGDAL(pointSet,"sites");
 
@@ -75,13 +83,13 @@ bool startUI(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setOrganizationName("INPE");
     app.setApplicationName("CMWVoronoi");
-    //CMWVDialog mainWin;
+    CMWVDialog mainWin;
 
 
-    //mainWin.show();
+    mainWin.show();
 
-    SimplifyWindow sim;
-    sim.show();
+    //SimplifyWindow sim;
+    //sim.show();
     return app.exec();
 }
 
@@ -105,14 +113,12 @@ int main(int argc, char *argv[]){
     //string c="/media/7C340CAA340C6A0A/";
     pointReader.getPointsFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/point_sample.shp","frequencia",pointSet,weights);
     pointReader.getObstaclesFromGDAL("/home/mauricio/Desktop/INPE/dissertacao/dados/breaklines_lin.shp",obstacles);
-
+    //testAWV(pointSet,weights);
+    testMWV(pointSet,weights);
     mwv teste;
-    obstacle out;
-    obstacle in=obstacles[9];
-    teste.douglasPeucker(in.begin(), in.end()-1,out, 100);
-    cout<< "From "<<in.size() << " to "<<out.size()<<endl;
 
-    //pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
+
+    pointReader.getPointsFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/ConsultaUrg09.shp","QTD_APRESE",pointSet,weights);
     //pointReader.getObstaclesFromGDAL("/home/mauricio/Projetos/MWVoronoi/samples/obstacles.shp",obstacles);
 
     //pointReader.getTestPoints(pointSet,weights);
@@ -125,7 +131,7 @@ int main(int argc, char *argv[]){
     //testMWV(pointSet,weights);
     //testCMWV(pointSet,weights,obstacles);
 
-    return startUI(argc, argv);
+    //return startUI(argc, argv);
 
 
     //int limit=91;

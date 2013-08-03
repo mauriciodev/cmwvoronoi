@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>324</width>
-    <height>309</height>
+    <width>357</width>
+    <height>342</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,7 +60,7 @@
      <item row="0" column="0">
       <widget class="QTabWidget" name="voronoiTabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="inputPage">
         <attribute name="title">
@@ -109,9 +109,21 @@
            <property name="title">
             <string>Select a weighting attribute</string>
            </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
              <widget class="QComboBox" name="weightComboBox"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_4">
+           <property name="title">
+            <string>Approximation tolerance for circular arcs (in map units):</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QLineEdit" name="toleranceLineEdit"/>
             </item>
            </layout>
           </widget>

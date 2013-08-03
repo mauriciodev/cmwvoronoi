@@ -56,7 +56,7 @@ void CMWVDialog::themeBrowseClick() {
         this->themeComboBox->setCurrentIndex(this->themeComboBox->count()-1);
         GeometryReader g;
         vector<string> weights=g.listWeightAttributes(fileName);
-        for (int i=0;i<weights.size();i++) {
+        for (unsigned int i=0;i<weights.size();i++) {
             this->weightComboBox->addItem(weights[i].c_str());
         }
     }

@@ -27,27 +27,27 @@ void VoronoiDiagramPlugin::init()
 		if(tview)
 		{
             // Voronoi
-            showVoronoiWinAction_ = new QAction(0);
+            /*showVoronoiWinAction_ = new QAction(0);
             showVoronoiWinAction_->setMenuText(tr("Voronoi"));
             showVoronoiWinAction_->setText(tr("Voronoi"));
-            showVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/voronoi.png")));
+            showVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/voronoi.png")));*/
 
             // Voronoi Ponderado Multiplicativamente 
 			showMWVoronoiWinAction_ = new QAction(0);
-			showMWVoronoiWinAction_->setMenuText(tr("Voronoi Ponderado Multiplicativamente"));
-			showMWVoronoiWinAction_->setText(tr("Voronoi Ponderado Multiplicativamente"));
+            showMWVoronoiWinAction_->setMenuText(tr("Multiplicatively Weighted Voronoi Diagram"));
+            showMWVoronoiWinAction_->setText(tr("Multiplicatively Weighted Voronoi Diagram"));
 			showMWVoronoiWinAction_->setIcon(QIcon(QPixmap(":/images/mwvoronoi.png")));
 
-            // Delaunay
+            /*/ Delaunay
             showDelaunayWinAction_ = new QAction(0);
             showDelaunayWinAction_->setMenuText(tr("Delaunay"));
             showDelaunayWinAction_->setText(tr("Delaunay"));
-            showDelaunayWinAction_->setIcon(QIcon(QPixmap(":/images/delaunay.png")));
+            showDelaunayWinAction_->setIcon(QIcon(QPixmap(":/images/delaunay.png")));*/
 
             // Douglas peucker generalization
             showGeneralizationWinAction_ = new QAction(0);
-            showGeneralizationWinAction_->setMenuText(tr("Generalization"));
-            showGeneralizationWinAction_->setText(tr("Generalization"));
+            showGeneralizationWinAction_->setMenuText(tr("Geometry simplification"));
+            showGeneralizationWinAction_->setText(tr("Geometry Simplification"));
             showGeneralizationWinAction_->setIcon(QIcon(QPixmap(":/images/delaunay.png")));
 
 			std::string mainMenuName = "TerraViewPlugins.";
@@ -57,15 +57,15 @@ void VoronoiDiagramPlugin::init()
 
 			if(mnu != 0)
 			{
-                mnu->addAction(showVoronoiWinAction_);
+                //mnu->addAction(showVoronoiWinAction_);
                 mnu->addAction(showMWVoronoiWinAction_);
-                mnu->addAction(showDelaunayWinAction_);
+                //mnu->addAction(showDelaunayWinAction_);
                 mnu->addAction(showGeneralizationWinAction_);
             }
 
-            connect(showVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showVoronoiWindow()));
+            //connect(showVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showVoronoiWindow()));
             connect(showMWVoronoiWinAction_, SIGNAL(activated()), this, SLOT(showMWVoronoiWindow()));
-            connect(showDelaunayWinAction_, SIGNAL(activated()), this, SLOT(showDelaunayWindow()));
+            //connect(showDelaunayWinAction_, SIGNAL(activated()), this, SLOT(showDelaunayWindow()));
             connect(showGeneralizationWinAction_, SIGNAL(activated()), this, SLOT(showGeneralizationWindow()));
 		}
 	}

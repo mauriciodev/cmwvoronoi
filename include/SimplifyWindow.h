@@ -14,6 +14,7 @@
 #include <TeGeoProcessingFunctions.h>
 #include <PluginParameters.h>
 #include <TeDataTypes.h>
+#include "voronoiBaseWindow.h"
 
 // forward declarations
 class TeDatabase;
@@ -25,7 +26,7 @@ class TeTheme;
 
 #include <stdlib.h>
 
-class SimplifyWindow: public QDialog, private Ui::UISimplify  {
+class SimplifyWindow: public voronoiBaseWindow, private Ui::UISimplify   {
     Q_OBJECT
 
 public:

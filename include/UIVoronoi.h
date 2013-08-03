@@ -2,6 +2,7 @@
 #define UIVORONOI_H
 
 #include <qdialog.h>
+#include "voronoiBaseWindow.h"
 
 namespace Ui {
     class UIVoronoi;
@@ -12,7 +13,7 @@ class UIVoronoi : public QDialog
     Q_OBJECT
 
 public:
-	UIVoronoi(QWidget* parent = 0) : QDialog(parent){};
+    UIVoronoi(QWidget* parent = 0) : QDialog(parent){};
 	~UIVoronoi(){};
 
 public slots:

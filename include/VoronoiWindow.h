@@ -15,6 +15,7 @@
 #include <TeDataTypes.h>
 
 
+
 #include <stdlib.h>
 #include "mwv.h"
 #include "cmwv_ps.h"
@@ -70,12 +71,13 @@ private:
     std::vector<std::string> listAttributes(TeTheme* theme);
     bool isLayerNameValid(const std::string& name);
     bool MWDiagramAsTePolygonSet(MWVDiagram &diagram, TePolygonSet &ps);
-    bool MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, vector<TeMultiPolygon> &mpols);
+    bool MWDiagramAsTeMultiPolygons(MWVDiagram &diagram, vector<TeMultiPolygon> &mpols, double tol);
     bool LinesetToObstacles(TeLineSet &ls, obstacleVector &obsVector);
 	bool PolygonSetToObstacles(TePolygonSet &ps, obstacleVector &obsVector);
+
     Bbox_2 TeBox2Bbox_2(TeBox boxTe);
 private:
-
+    void hideBrowseButtons();
     PluginParameters* plugin_params_;
     enumDiagramType diagramType;
 };

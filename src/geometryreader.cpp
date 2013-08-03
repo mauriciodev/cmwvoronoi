@@ -14,6 +14,7 @@ bool GeometryReader::getExtent(std::string filename, Bbox_2 &box) {
     OGREnvelope env;
     poLayer->GetExtent(&env);
     box=Bbox_2(env.MinX,env.MinY,env.MaxX,env.MaxY);
+    return true;
 }
 
 void GeometryReader::getTestPoints(siteVector &v, weightVector &w) {
@@ -540,4 +541,117 @@ vector<string> GeometryReader::listWeightAttributes(std::string filename) {
     }
 
     return result;
+}
+
+bool GeometryReader::exportAGToGDAL(Apollonius_graph &ag,std::string filename) {
+    //FIXME handle holes
+    const char *pszDriverName = "ESRI Shapefile";
+    OGRSFDriver *poDriver;
+    poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(pszDriverName );
+    if( poDriver == NULL )    {
+        printf( "%s driver not available.\n", pszDriverName );
+        return 1;
+    }
+    char** options=NULL;
+    options=CSLAddNameValue(options,"OVERWRITE","YES");
+
+    OGRDataSource *poDS;
+    poDS = poDriver->CreateDataSource( filename.c_str(), options );
+    if( poDS == NULL )    {
+        printf( "Creation of output file failed.\n" );
+        return  1 ;
+    }
+    OGRLayer *poLayer;
+    if (poDS->GetLayerByName(filename.c_str())) {
+        poDS->DeleteLayer(0);
+    }
+    poLayer = poDS->CreateLayer( filename.c_str(), NULL, wkbMultiPolygon, NULL );
+
+    if( poLayer == NULL ) {
+        printf( "Layer creation failed.\n" );
+        return 1;
+    }
+    OGRFeature *poFeature;
+
+
+    std::cout << ag.number_of_faces() << " areas created." << std::endl;
+    for (Apollonius_graph::Vertex_handle vIt=ag.all_vertices_begin();vIt!=ag.all_vertices_end();++vIt) {
+        Apollonius_graph::Vertex v;
+
+    }
+    /*for (Apollonius_graph::Face_handle fIt=ag.finite_faces_begin(); fIt!=ag.finite_faces_end();++fIt) {
+        poFeature = OGRFeature::CreateFeature( poLayer->GetLayerDefn() );
+        AWTraits::Object_2 fDual=ag.dual(fIt);
+        Site_2 pDual=fDual;*/
+
+
+
+        /*std::list<Polygon_with_holes_2> res;
+        std::list<Polygon_with_holes_2>::const_iterator it;
+        //cout << "Polygons: "<<polIt->number_of_polygons_with_holes() << endl;
+
+        polIt->polygons_with_holes (std::back_inserter (res));
+        mwv_base mwvHelper;
+        OGRMultiPolygon mpol;
+        for (it=res.begin();it!=res.end();++it) {
+            OGRPolygon pol;
+            OGRLinearRing ring;
+            Polygon_2::Curve_const_iterator cIt;
+            //cout << "Curves: "<<it->outer_boundary().number << endl;
+            for(cIt=it->outer_boundary().curves_begin(); cIt!=it->outer_boundary().curves_end();++cIt) {
+
+                vector<double>x,y;
+                mwvHelper.arcAsLinestring(*cIt,x,y);
+
+                for(unsigned int i=0; i<x.size()-1;i++) {
+                    if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                        ring.addPoint(x[i],y[i]);
+                    }
+                }
+
+
+            }
+            OGRPoint p0;
+            ring.getPoint(0,&p0);
+            ring.addPoint(&p0);
+            pol.addRing(&ring); //if (ring.IsValid())
+            //cout<<ring.getNumPoints()<<endl;
+            mwv_base mwvHelper;
+            //reading holes
+            Polygon_with_holes_2::Hole_const_iterator hit;
+            //std::cout << "  " << it->number_of_holes() << " holes:" << std::endl;
+            for (hit = it->holes_begin(); hit != it->holes_end(); ++hit) {
+                OGRLinearRing innerRing;
+                for(cIt=hit->curves_begin(); cIt!=hit->curves_end();++cIt) {
+                    vector<double>x,y;
+
+                    mwvHelper.arcAsLinestring(*cIt,x,y);
+                    for(unsigned int i=0; i<x.size()-1;i++) {
+                        if( ! ((x[i]!=x[i]) || (y[i]!=y[i]) ) ) { //not nan
+                            innerRing.addPoint(x[i],y[i]);
+                        }
+                    }
+                }
+                OGRPoint p0;
+                innerRing.getPoint(0,&p0);
+                innerRing.addPoint(&p0);
+                pol.addRing(&innerRing);
+
+            }
+            if (pol.getBoundary()->IsValid()) {
+                mpol.addGeometry(&pol);
+            }
+        }
+
+        poFeature->SetGeometry( &mpol );
+        if( poLayer->CreateFeature( poFeature ) != OGRERR_NONE )  {
+            printf( "Failed to create feature in shapefile.\n" );
+            exit( 1 );
+        }*/
+        /*OGRFeature::DestroyFeature( poFeature );
+
+    }*/
+    OGRDataSource::DestroyDataSource( poDS );
+    CPLFree(options);
+    return 0;
 }

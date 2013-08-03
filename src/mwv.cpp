@@ -46,6 +46,8 @@ void mwv::getDiagram(siteVector &sites, weightVector &weights, Bbox_2 extent, MW
     if (numberOfThreads==0) {
         numberOfThreads=boost::thread::hardware_concurrency();
     }
+    //force the number of threads for now
+    numberOfThreads=1;
 
     //creating threads
     int startId,endId, sitesPerGroup;

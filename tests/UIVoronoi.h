@@ -5,9 +5,11 @@
 #include "geometryreader.h"
 #include "mwv.h"
 
+
 using namespace std;
 #include <QFileDialog>
 #include <qdatetime.h>
+#include <QMessageBox>
 
 class CMWVDialog : public QDialog, private  Ui_UIVoronoi
 {

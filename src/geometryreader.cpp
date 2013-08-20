@@ -48,6 +48,7 @@ void GeometryReader::getRandomPoints(int nPoints, siteVector &v, weightVector &w
 }
 
 bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightField, siteVector &sites, weightVector & w, int sizeLimit) {
+
     OGRDataSource       *poDS;
     poDS = OGRSFDriverRegistrar::Open( filename.c_str(), FALSE );
     if( poDS == NULL ) return false;
@@ -55,8 +56,11 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
     if( poLayer == NULL ) return false;
     OGRFeature *poFeature;
 
+    w.clear();
+    sites.clear();
     OGRFeatureDefn *fields=poLayer->GetLayerDefn();
     int iField=fields->GetFieldIndex(weightField.c_str());
+    /*delete fields;*/
     OGRGeometry *poGeometry;
     poLayer->ResetReading();
     int i=0;
@@ -73,8 +77,12 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
         } else  {
            printf( "no point geometry\n" );
         }
-    }
 
+        OGRFeature::DestroyFeature( poFeature );
+
+
+    }
+    OGRDataSource::DestroyDataSource( poDS );
     return true;
 }
 
@@ -472,9 +480,11 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
                 pol.addRing(&innerRing);
 
             }
-            if (pol.getBoundary()->IsValid()) {
+            OGRGeometry* bounds=pol.Boundary();
+            if (bounds->IsValid()) {
                 mpol.addGeometry(&pol);
             }
+            delete bounds;
         }
 
         poFeature->SetGeometry( &mpol );
@@ -486,7 +496,7 @@ bool GeometryReader::exportMWVDiagramToGDAL(MWVDiagram &diagram,std::string file
 
     }
     OGRDataSource::DestroyDataSource( poDS );
-    CPLFree(options);
+    CSLDestroy(options);
     return 0;
 }
 
@@ -521,6 +531,7 @@ bool GeometryReader::getObstaclesFromGDAL(std::string filename, obstacleVector &
         }
     }
 
+    OGRDataSource::DestroyDataSource( poDS );
     return true;
 
 }
@@ -539,7 +550,7 @@ vector<string> GeometryReader::listWeightAttributes(std::string filename) {
             result.push_back(attributes->GetFieldDefn(i)->GetNameRef());
         }
     }
-
+    OGRDataSource::DestroyDataSource( poDS );
     return result;
 }
 

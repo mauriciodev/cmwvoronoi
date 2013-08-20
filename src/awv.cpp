@@ -13,7 +13,7 @@ awv::awv() {
 }
 
 void awv::getDiagram(siteVector &v, weightVector &w) {
-    for (int i=0;i<v.size();i++) {
+    for (unsigned int i=0;i<v.size();i++) {
         Apollonius_graph::Site_2 site(v[i],w[i]);
         this->graph.insert(site);
     }

@@ -299,16 +299,23 @@ void cmwv_ps::processSites(int startId, int endId,siteVector sites, weightVector
 void cmwv_ps::processShadows(int startId, int endId, siteVector sites, weightVector weights, obstacleVector obstacles, Bbox_2 extent, VisibilityConcept concept) {
     Polygon_2 wholeArea;
     wholeArea=BoxAsPolygon(extent);
+    siteVector s;
+    obstacleVector o;
+    //copying sites to avoid access issues
+    this->_mutex.lock();
+    s=sites;
+    o=obstacles;
+    this->_mutex.lock();
     cout <<"Processing from "<< startId << " to "<< endId<<endl;
-    for (int i=startId;(i<endId+1) && (i<sites.size());i++) { //for each site
+    for (int i=startId;(i<endId+1) && (i<s.size());i++) { //for each site
         Polygon_set_2 invisibleArea;
-        for (unsigned int j=0;j<obstacles.size();j++) { //for each obstacle
+        for (unsigned int j=0;j<o.size();j++) { //for each obstacle
             Polygon_set_2 objectShadow;
             if (concept==Wang) {
-                obstacleShadowsWang(sites[i],obstacles[j],extent,objectShadow);
+                obstacleShadowsWang(s[i],o[j],extent,objectShadow);
             }
             if (concept==DePaulo) {
-                obstacleShadowsMauricio(sites[i],obstacles[j],extent,objectShadow);
+                obstacleShadowsMauricio(s[i],o[j],extent,objectShadow);
             }
             invisibleArea.join(objectShadow);
         }

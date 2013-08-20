@@ -38,9 +38,10 @@ void CMWVDialog::okPushButton_clicked() {
         } else {
             box=DiagramGenerator.getBoundingBox(pointSet);
         }
-        DiagramGenerator.getDiagram(pointSet,weights,box,Diagram,0);
+        DiagramGenerator.getDiagram(pointSet,weights,box,Diagram,1);
     }
     pointReader.exportMWVDiagramToGDAL(Diagram,this->layerNameLineEdit->text().toStdString());
+    QMessageBox::information(this,"Process finished.","Done.");
 
 
 

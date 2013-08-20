@@ -1,6 +1,8 @@
 #ifndef MWV_BASE_H
 #define MWV_BASE_H
 
+#define CGAL_HAS_THREADS true
+
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

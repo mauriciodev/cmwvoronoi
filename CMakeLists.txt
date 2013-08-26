@@ -56,7 +56,7 @@ include/mwv_base.h
 include/cmwv_ps.h
 include/grid.h
 include/cmwv_definitions.h
-include/awv.h
+#include/awv.h
 include/mwv_grid.h
 ) #include/SimplifyWindow.h include/voronoiBaseWindow.h
 
@@ -66,7 +66,7 @@ src/geometryreader.cpp
 src/mwv.cpp
 src/mwv_base.cpp
 src/cmwv_ps.cpp
-src/awv.cpp
+#src/awv.cpp
 src/mwv_grid.cpp
 src/grid.cpp
 ) #src/SimplifyWindow.cpp src/voronoiBaseWindow.cpp
@@ -97,13 +97,13 @@ include_directories(${QT_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 #creating the lib
 set(SRCS ${CMWV_SRCS} ${CMWV_HEADERS} ${Ui_HEADERS_MOC} ${project_UI_MOC} ${project_UI_SRCS} ${project_UI_HDRS})
 set(LIBS ${LIBS} ${QT_LIBRARIES}  ${CGAL_LIBRARIES}  ${CGAL_3RD_PARTY_LIBRARIES} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_library(libcmwvoronoi ${SRCS})
-target_link_libraries(libcmwvoronoi ${LIBS})
+add_library(cmwvoronoi ${SRCS})
+target_link_libraries(cmwvoronoi ${LIBS})
 
 add_executable(mainui tests/main.cpp)
 add_executable(main_tests tests/main_tests.cpp)
 
-target_link_libraries(mainui ${LIBS} libcmwvoronoi)
-target_link_libraries(main_tests ${LIBS} libcmwvoronoi)
+target_link_libraries(mainui ${LIBS} cmwvoronoi)
+target_link_libraries(main_tests ${LIBS} cmwvoronoi)
 #add_executable(poly examples/polygon.cpp)
 #target_link_libraries(poly ${LIBS} ${QT_LIBRARIES}  ${CGAL_LIBRARIES}  ${CGAL_3RD_PARTY_LIBRARIES})

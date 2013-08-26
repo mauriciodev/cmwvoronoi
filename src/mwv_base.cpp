@@ -1,5 +1,24 @@
 #include "mwv_base.h"
 
+
+bool coord::operator==(coord const &c2) {
+    return ((this->x==c2.x) && (this->y==c2.y));
+}
+
+void coord::operator=(coord const &c2) {
+    this->x=c2.x;
+    this->y=c2.y;
+}
+
+bool coord::operator!=(coord const &c2) {
+    return (!((*this)==c2));
+}
+
+Point_2 coord::cgal() {
+    return(Point_2(x,y));
+}
+
+
 mwv_base::mwv_base()
 {
 }
@@ -138,14 +157,14 @@ void mwv_base::ApoloniusCircle(Point_2 s1, double w1, Point_2 s2, double w2, Cur
 CGAL::Bbox_2 mwv_base::getBoundingBox(siteVector &sites) {
     double minx,maxx,miny,maxy;
     siteVector::iterator sIt=sites.begin();
-    minx=maxx=CGAL::to_double(sIt->x());
-    miny=maxy=CGAL::to_double(sIt->y());
+    minx=maxx=sIt->x;
+    miny=maxy=sIt->y;
 
     for (sIt=sites.begin(); sIt!=sites.end(); ++sIt) {
-        if (CGAL::to_double(sIt->x())>maxx) maxx=CGAL::to_double(sIt->x());
-        if (CGAL::to_double(sIt->x())<minx) minx=CGAL::to_double(sIt->x());
-        if (CGAL::to_double(sIt->y())>maxy) maxy=CGAL::to_double(sIt->y());
-        if (CGAL::to_double(sIt->y())<miny) miny=CGAL::to_double(sIt->y());
+        if (sIt->x>maxx) maxx=sIt->x;
+        if (sIt->x<minx) minx=sIt->x;
+        if (sIt->y>maxy) maxy=sIt->y;
+        if (sIt->y<miny) miny=sIt->y;
     }
     double tolx=(maxx-minx)/10.;
     double toly=(maxy-miny)/10.;
@@ -374,8 +393,10 @@ double mwv_base::measureAngle(Point_2 p1, Point_2 p0, Point_2 p2) {
 
 bool mwv_base::isPolygon(obstacle &obs) {
     Point_2 p;
-    NT length1=CGAL::squared_distance(obs[0],obs[1]);
-    NT lengthFirstLast=CGAL::squared_distance(obs[0],obs[obs.size()-1]);
+    double length1=obs[0].distance(obs[1]);
+    //NT length1=CGAL::squared_distance(obs[0],obs[1]);
+    double lengthFirstLast=obs[0].distance(obs[obs.size()-1]);
+    //NT lengthFirstLast=CGAL::squared_distance(obs[0],obs[obs.size()-1]);
     if (lengthFirstLast<length1/100000.) {
         return true;
     } else {
@@ -387,10 +408,11 @@ void mwv_base::douglasPeucker(obstacle::iterator obsStart, obstacle::iterator ob
     /*!Douglas peucker linestring simplification*/
     NT dmax=0;
     obstacle::iterator maxCoord=obsStart;
-    Line_2 base(*obsStart,*(obsEnd-1));
+    Point_2 p1(obsStart->x,obsStart->y),p2((obsEnd-1)->x,(obsEnd-1)->y);
+    Line_2 base(p1,p2);
     //cout<<base<<endl;
     for(obstacle::iterator it= obsStart; it!=obsEnd;++it) {
-        NT d=CGAL::squared_distance(base,*it);
+        NT d=CGAL::squared_distance(base,Point_2(it->x,it->y));
         if (d>dmax) {
             maxCoord=it;
             dmax=d;

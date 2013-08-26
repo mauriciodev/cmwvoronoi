@@ -11,23 +11,29 @@ bool mwv::oneDominance(int i, siteVector &sites, weightVector &weights, Bbox_2 e
     Polygon_set_2 S;
     cout<<i+1<<" de "<<sites.size()<< endl;
     S.join(wholeArea);
+
     for (int j=0; j<(int)sites.size();j++) {
         if (i!=j) {
             //cout<<S.number_of_polygons_with_holes()<<endl;
             Polygon_set_2 c;
-            TwoSitesDominance(sites[i],weights[i],sites[j],weights[j],c,extent);
+            //Curve_2 c1;
+            //if (w1==w2) w1*=0.001; //forcing circular case
+            //ApoloniusCircle(sites[i].cgal(),weights[i],sites[j].cgal(),weights[j],c1);
+            TwoSitesDominance(sites[i].cgal(),weights[i],sites[j].cgal(),weights[j],c,extent);
             //cout<<S.do_intersect(dominance)<<endl;
             S.intersection(c);
         }
     }
-    this->_mutex.lock();
+    //this->_mutex.lock();
+    int npols=S.number_of_polygons_with_holes();
+    boost::mutex::scoped_lock lock(_mutex);
     this->_diagram[i].clear();
     this->_diagram[i].join(S);
-    this->_mutex.unlock();
+    //this->_mutex.unlock();
     //cout << "Polygons "<< i<<": "<<S.number_of_polygons_with_holes() << endl;
     //    (*teste)[i]=i;
     //cout<<i<<",";
-	return (S.number_of_polygons_with_holes()>0);
+    return (npols>0);
 }
 
 void mwv::processSites(int startId, int endId,siteVector s, weightVector w, Bbox_2 extent) {

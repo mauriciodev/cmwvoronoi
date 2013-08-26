@@ -14,10 +14,12 @@ public:
     void getDiagram(siteVector &sites, weightVector &weights, obstacleVector obstacles, Bbox_2 extent, MWVDiagram &dominanceAreas, VisibilityConcept concept, int numberOfThreads=0);
     vector<Polygon_set_2> _visibleAreas;
 private:
-    void obstacleShadowsWang(Point_2 &site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
-    void obstacleShadowsMauricio(Point_2 &site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
+    void obstacleShadowsWang(Point_2 site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
+    void obstacleShadowsMauricio(Point_2 site, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows );
     void processSites(int startId, int endId,siteVector sites, weightVector weights,Bbox_2 extent, vector<Polygon_set_2> visibleAreas);
     void processShadows(int startId, int endId, siteVector sites, weightVector weights, obstacleVector obstacles, Bbox_2 extent, VisibilityConcept concept);
+    void processSites_slow(int startId, int endId,siteVector sites, weightVector weights,Bbox_2 extent, obstacleVector obstacles, VisibilityConcept concept);
+
     int circularId(int id, int size);
     bool cleanObstaclesOutsideExtent(obstacleVector &obstacles);
 

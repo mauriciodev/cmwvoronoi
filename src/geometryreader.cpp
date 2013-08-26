@@ -18,9 +18,9 @@ bool GeometryReader::getExtent(std::string filename, Bbox_2 &box) {
 }
 
 void GeometryReader::getTestPoints(siteVector &v, weightVector &w) {
-    v.push_back(Point_2(1,1));
-    v.push_back(Point_2(10,0));
-    v.push_back(Point_2(5,5));
+    v.push_back(coord(1,1));
+    v.push_back(coord(10,0));
+    v.push_back(coord(5,5));
     w.push_back(5);
     w.push_back(10);
     w.push_back(5);
@@ -40,7 +40,7 @@ void GeometryReader::getRandomPoints(int nPoints, siteVector &v, weightVector &w
         y1 = theRandom.get_double(random_min,random_max);
         w1 = theRandom.get_double(10,100);
         std::cout << x1 << " " << y1 <<" "<<  w1<< std::endl;
-        Point_2 s(x1,y1);
+        coord s(x1,y1);
         //s.weight=w1;
         w.push_back(w1);
         v.push_back(s);
@@ -73,7 +73,7 @@ bool GeometryReader::getPointsFromGDAL(std::string filename, std::string weightF
         if( poGeometry != NULL && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint )  {
            OGRPoint *poPoint = (OGRPoint *) poGeometry;
            //cout<< poPoint->getX()<<", "<<poPoint->getY()<<endl;
-           sites.push_back(Point_2(poPoint->getX(),poPoint->getY()));
+           sites.push_back(coord(poPoint->getX(),poPoint->getY()));
         } else  {
            printf( "no point geometry\n" );
         }
@@ -522,7 +522,7 @@ bool GeometryReader::getObstaclesFromGDAL(std::string filename, obstacleVector &
            obstacle ob;
            for (int j=0; j<poLine->getNumPoints(); j++) {
                poLine->getPoint(j,&poPoint);
-               ob.push_back(Point_2(poPoint.getX(),poPoint.getY()));
+               ob.push_back(coord(poPoint.getX(),poPoint.getY()));
            }
            //cout<< poPoint->getX()<<", "<<poPoint->getY()<<endl;
            obstacles.push_back(ob);

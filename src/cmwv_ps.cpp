@@ -38,13 +38,13 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
 
     Polygon_2 wholeArea;
     wholeArea=BoxAsPolygon(extent);
-    //create visibility areas
+    cout<< "Creating visibility areas"<<endl;
     this->_visibleAreas.clear();
-    this->_visibleAreas.resize(sites.size());
+    //this->_visibleAreas.resize(sites.size());
     for (int i=0;i<numberOfThreads;i++) {
         startId=sitesPerGroup*i;
         endId=sitesPerGroup*(i+1)-1;
-        threads.add_thread(new boost::thread(&cmwv_ps::processShadows,this, startId, endId, sites, weights, obstacles, extent, concept));
+        //threads.add_thread(new boost::thread(&cmwv_ps::processShadows,this, startId, endId, sites, weights, obstacles, extent, concept));
     }
     threads.join_all();
     //processShadows(0, sites.size(), sites, weights, obstacles, extent, concept);
@@ -60,8 +60,8 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
     for (int i=0;i<numberOfThreads;i++) {
         startId=sitesPerGroup*i;
         endId=sitesPerGroup*(i+1)-1;
-
-        threads2.add_thread(new boost::thread(&cmwv_ps::processSites,this, startId, endId, sites, weights, extent, this->_visibleAreas));
+        //threads2.add_thread(new boost::thread(&cmwv_ps::processSites,this, startId, endId, sites, weights, extent, this->_visibleAreas));
+        threads2.add_thread(new boost::thread(&cmwv_ps::processSites_slow,this, startId, endId, sites, weights, extent, obstacles,concept));
     }
     threads2.join_all();
 
@@ -73,21 +73,22 @@ void cmwv_ps::getDiagram(siteVector &sites, weightVector &weights, obstacleVecto
 
 }
 
-void cmwv_ps::obstacleShadowsWang(Point_2 &s, obstacle &obstacles, Bbox_2 extent, Polygon_set_2 &shadows ) {
+
+void cmwv_ps::obstacleShadowsWang(Point_2 s, obstacle &obstacles, Bbox_2 extent, Polygon_set_2 &shadows ) {
     //Polygon_set_2 wholeArea=BoxAsPolygon(extent);
     for (unsigned int k=0;k<obstacles.size()-1;k++) { //for each pair of lines created
         //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
         //create a polygon to represent the shadow of that pair
         if (obstacles[k]!=obstacles[k+1]) {
-            double alpha=angle(s,obstacles[k],obstacles[k+1]);
+            double alpha=angle(s,obstacles[k].cgal(),obstacles[k+1].cgal());
             vector<Point_2> boxVertexes;
             Point_2 minVertex,maxVertex;
             if (alpha>0) {//k+1 is clockwise sucessor of k
-                minVertex=obstacles[k];
-                maxVertex=obstacles[k+1];
+                minVertex=obstacles[k].cgal();
+                maxVertex=obstacles[k+1].cgal();
             } else {
-                minVertex=obstacles[k+1];
-                maxVertex=obstacles[k];
+                minVertex=obstacles[k+1].cgal();
+                maxVertex=obstacles[k].cgal();
             }
             closePolygon(s,minVertex,maxVertex,extent,boxVertexes);
 
@@ -109,17 +110,17 @@ void cmwv_ps::obstacleShadowsWang(Point_2 &s, obstacle &obstacles, Bbox_2 extent
     }
 }
 
-void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows ) {
+void cmwv_ps::obstacleShadowsMauricio(Point_2 s, obstacle &obstacle, Bbox_2 extent, Polygon_set_2 &shadows ) {
     //Find min and max angles and vertexes ids
     int vmaxId=0, vminId=0,minDistId=0, nElements=0;
     nElements=obstacle.size();
-    NT currentTotal=0, currentAngle=0,newTotal=0, maxTotal=0, minTotal=0, minDist=0;
+    NT currentAngle=0,newTotal=0, maxTotal=0, minTotal=0, minDist=0;
     bool isPolygon=false;
     //if (obstacle[0]==obstacle[obstacle.size()-1]) isPolygon=true;
     isPolygon=this->isPolygon(obstacle);
-    minDist=CGAL::squared_distance(s,obstacle[0]);
+    minDist=CGAL::squared_distance(s,obstacle[0].cgal());
     for (unsigned int i=1; i<nElements;i++) {
-        currentAngle=angle(s, obstacle[i-1], obstacle[i]);
+        currentAngle=angle(s, obstacle[i-1].cgal(), obstacle[i].cgal());
         newTotal=currentAngle+newTotal;
 
         //cout<<currentAngle<<" ; "<<newTotal<<" ; " <<minTotal<< " ; "<<maxTotal<<endl;
@@ -131,9 +132,9 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
             vmaxId=i;
             maxTotal=newTotal;
         }
-        if (minDist>CGAL::squared_distance(s,obstacle[i])) {
+        if (minDist>CGAL::squared_distance(s,obstacle[i].cgal())) {
             minDistId=i;
-            minDist=CGAL::squared_distance(s,obstacle[i]);
+            minDist=CGAL::squared_distance(s,obstacle[i].cgal());
         }
     }
     //abs(vminId-vmaxId)==1 || (abs(vminId-vmaxId)==nElements-2);
@@ -151,7 +152,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
         //last point is equal to the first
         int nextId=circularId(minDistId+1,nElements);
         int previousId=circularId(minDistId-1,nElements);
-        if (CGAL::squared_distance(s,obstacle[previousId]) < CGAL::squared_distance(s,obstacle[nextId])) {
+        if (CGAL::squared_distance(s,obstacle[previousId].cgal()) < CGAL::squared_distance(s,obstacle[nextId].cgal())) {
             minDistId=previousId;
         } else {
             minDistId=nextId;
@@ -160,9 +161,9 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
     if (((minDistId==vminId) || (minDistId==vmaxId)) && isNext) {
         //if there is only one edge between vminId and vmaxId, check if the line crosses the line with the minimum distance from the nearest non min/max vertex and the site.
         int nextId=minDistId;
-        Line_2 baseLine(obstacle[vminId],obstacle[vmaxId]);
+        Line_2 baseLine(obstacle[vminId].cgal(),obstacle[vmaxId].cgal());
         while ((nextId==vminId) || (nextId==vmaxId)) nextId=circularId(nextId+1,nElements);
-        Line_2 nonMinMaxBaseLine(s,obstacle[nextId]);
+        Line_2 nonMinMaxBaseLine(s,obstacle[nextId].cgal());
 
         if (CGAL::do_intersect(baseLine,nonMinMaxBaseLine)) {
             //the baseLine is the nearest
@@ -178,7 +179,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
 
     //end of workaround
     vector<Point_2> boxVertexes;
-    closePolygon(s,obstacle[vminId],obstacle[vmaxId],extent,boxVertexes);
+    closePolygon(s,obstacle[vminId].cgal(),obstacle[vmaxId].cgal(),extent,boxVertexes);
     //reverse the points to start from max vertex
     reverse(boxVertexes.begin(),boxVertexes.end());
     //Polygon_set_2 wholeArea=BoxAsPolygon(extent);
@@ -191,12 +192,12 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
         for (int k=vminId;k!=vmaxId;k+=inc) { //for each pair of lines created
             //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
             if (obstacle[k]!=obstacle[k+inc]) {
-                shadow.push_back(GPS_Segment_2(obstacle[k],obstacle[k+inc]));
+                shadow.push_back(GPS_Segment_2(obstacle[k].cgal(),obstacle[k+inc].cgal()));
             }
         }
     } else {
         if (((circularId(minDistId,nElements)==circularId(vminId,nElements)) || (circularId(minDistId,nElements)==circularId(vmaxId,nElements))) && isNext) { //this means that there are too few vertices to represent one part. Make a virtual point
-            shadow.push_back(GPS_Segment_2(obstacle[vminId],obstacle[vmaxId]));
+            shadow.push_back(GPS_Segment_2(obstacle[vminId].cgal(),obstacle[vmaxId].cgal()));
 
         } else if( abs(minDistId-vminId)+abs(minDistId-vmaxId)== abs(vminId-vmaxId) ) {
             //check if the vertex with minimum distance is between the two maximums in the vector
@@ -204,7 +205,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
             for (int k=circularId(vminId,nElements);k!=circularId(vmaxId,nElements);k=circularId(k+inc,nElements)) { //for each pair of lines created
                 //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
                 if (obstacle[k]!=obstacle[k+inc]) {
-                    shadow.push_back(GPS_Segment_2(obstacle[k],obstacle[k+inc]));
+                    shadow.push_back(GPS_Segment_2(obstacle[k].cgal(),obstacle[k+inc].cgal()));
                 }
             }
         } else { //not between the two, reverse walking using mod to circle around the vector
@@ -213,7 +214,7 @@ void cmwv_ps::obstacleShadowsMauricio(Point_2 &s, obstacle &obstacle, Bbox_2 ext
                 //cout<<obstacles[j][k] <<", " <<obstacles[j][k+1]<<endl;
                 int kinc2=circularId(k-inc,nElements);
                 if (obstacle[k]!=obstacle[kinc2]) {
-                    shadow.push_back(GPS_Segment_2(obstacle[k],obstacle[kinc2]));
+                    shadow.push_back(GPS_Segment_2(obstacle[k].cgal(),obstacle[kinc2].cgal()));
                 }
             }
 
@@ -276,7 +277,7 @@ void cmwv_ps::processSites(int startId, int endId,siteVector sites, weightVector
                 //cout<<S.number_of_polygons_with_holes()<<endl;
                 Polygon_set_2 dominance,jInvisibleArea, constrainedDominance;
                 dominance.clear();
-                TwoSitesDominance(sites[i],weights[i],sites[j],weights[j],dominance, extent);
+                TwoSitesDominance(sites[i].cgal(),weights[i],sites[j].cgal(),weights[j],dominance, extent);
                 //cout<<S.do_intersect(dominance)<<endl;
                 jInvisibleArea.clear();
                 jInvisibleArea.join(wholeArea);
@@ -289,33 +290,30 @@ void cmwv_ps::processSites(int startId, int endId,siteVector sites, weightVector
                 S.intersection(constrainedDominance);
             }
         }
-        this->_mutex.lock();
+        boost::mutex::scoped_lock lock(_mutex);
+        //this->_mutex.lock();
         this->_diagram[i].join(S);
-        this->_mutex.unlock();
+        //this->_mutex.unlock();
         //dominanceAreas.push_back(S);
     }
 }
 
-void cmwv_ps::processShadows(int startId, int endId, siteVector sites, weightVector weights, obstacleVector obstacles, Bbox_2 extent, VisibilityConcept concept) {
+void cmwv_ps::processShadows(int startId, int endId, siteVector s, weightVector weights, obstacleVector o, Bbox_2 extent, VisibilityConcept concept) {
     Polygon_2 wholeArea;
     wholeArea=BoxAsPolygon(extent);
-    siteVector s;
-    obstacleVector o;
     //copying sites to avoid access issues
-    this->_mutex.lock();
-    s=sites;
-    o=obstacles;
-    this->_mutex.lock();
+
     cout <<"Processing from "<< startId << " to "<< endId<<endl;
+
     for (int i=startId;(i<endId+1) && (i<s.size());i++) { //for each site
         Polygon_set_2 invisibleArea;
         for (unsigned int j=0;j<o.size();j++) { //for each obstacle
             Polygon_set_2 objectShadow;
             if (concept==Wang) {
-                obstacleShadowsWang(s[i],o[j],extent,objectShadow);
+                obstacleShadowsWang(s[i].cgal(),o[j],extent,objectShadow);
             }
             if (concept==DePaulo) {
-                obstacleShadowsMauricio(s[i],o[j],extent,objectShadow);
+                obstacleShadowsMauricio(s[i].cgal(),o[j],extent,objectShadow);
             }
             invisibleArea.join(objectShadow);
         }
@@ -324,6 +322,33 @@ void cmwv_ps::processShadows(int startId, int endId, siteVector sites, weightVec
         this->_visibleAreas[i].difference(invisibleArea);
         this->_mutex.unlock();
     }
+}
+
+void cmwv_ps::processSites_slow(int startId, int endId, siteVector sites, weightVector weights, Bbox_2 extent, obstacleVector obstacles, cmwv_ps::VisibilityConcept concept)
+{
+    Polygon_2 wholeArea;
+    wholeArea=BoxAsPolygon(extent);
+    cout <<"Processing from "<< startId << " to "<< endId<<endl;
+    vector<Polygon_set_2> visibleAreasS;
+    visibleAreasS.resize(sites.size());
+    for (int i=0;(i<sites.size()) && (i<sites.size());i++) { //for each site
+        Polygon_set_2 invisibleArea;
+        for (unsigned int j=0;j<obstacles.size();j++) { //for each obstacle
+            Polygon_set_2 objectShadow;
+            if (concept==Wang) {
+                obstacleShadowsWang(sites[i].cgal(),obstacles[j],extent,objectShadow);
+            }
+            if (concept==DePaulo) {
+                obstacleShadowsMauricio(sites[i].cgal(),obstacles[j],extent,objectShadow);
+            }
+            invisibleArea.join(objectShadow);
+        }
+
+        visibleAreasS[i].join(wholeArea);
+        visibleAreasS[i].difference(invisibleArea);
+    }
+    this->processSites(startId,endId,sites,weights,extent,visibleAreasS);
+
 }
 
 int cmwv_ps::circularId(int id, int size) {

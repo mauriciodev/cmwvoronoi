@@ -16,8 +16,8 @@ void mwv_grid::getDiagram(siteVector &sites, weightVector &weights, CGAL::Bbox_2
             int minK=0;
             for (unsigned int k=0; k<sites.size();k++) {
                 //weighted distance
-                dx=CGAL::to_double(x-sites[k].x());
-                dy=CGAL::to_double(y-sites[k].y());
+                dx=CGAL::to_double(x-sites[k].x);
+                dy=CGAL::to_double(y-sites[k].y);
                 d=sqrt(dx*dx+dy*dy)/weights[k];
                 if(d<minDist) {
                     minDist=d;
